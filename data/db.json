@@ -1,0 +1,117 @@
+{
+  "accounts": [
+    {
+      "id": "ID001",
+      "name": "Ricarth",
+      "lastName": "Lima",
+      "balance": 113
+    },
+    {
+      "id": "ID002",
+      "name": "Ana",
+      "lastName": "Silva",
+      "balance": 250
+    },
+    {
+      "id": "ID003",
+      "name": "Bruno",
+      "lastName": "Santos",
+      "balance": 75
+    },
+    {
+      "id": "ID004",
+      "name": "Carla",
+      "lastName": "Oliveira",
+      "balance": 500
+    },
+    {
+      "id": "ID005",
+      "name": "Daniel",
+      "lastName": "Ferreira",
+      "balance": 180
+    },
+    {
+      "id": "ID006",
+      "name": "Elisa",
+      "lastName": "Costa",
+      "balance": 320
+    },
+    {
+      "id": "ID007",
+      "name": "Fábio",
+      "lastName": "Pereira",
+      "balance": 60
+    },
+    {
+      "id": "ID008",
+      "name": "Gabriela",
+      "lastName": "Rodrigues",
+      "balance": 200
+    },
+    {
+      "id": "ID009",
+      "name": "Henrique",
+      "lastName": "Martins",
+      "balance": 450
+    },
+    {
+      "id": "ID010",
+      "name": "Isabela",
+      "lastName": "Almeida",
+      "balance": 210
+    },
+    {
+      "id": "64229290-d3a4-11f0-bde3-09c88c6c5640",
+      "name": "foo",
+      "lastName": "gar",
+      "balance": 0,
+      "accountType": "AMBROSIA"
+    },
+    {
+      "id": "95a8d620-d3a5-11f0-9e08-0744b7aeb8a7",
+      "name": "foo",
+      "lastName": "bar",
+      "balance": 0,
+      "accountType": "PUDIM"
+    },
+    {
+      "id": "aacd2100-d3a5-11f0-9e08-0744b7aeb8a7",
+      "name": "bar ",
+      "lastName": "baz",
+      "balance": 0,
+      "accountType": "BRIGADEIRO"
+    },
+    {
+      "id": "bd3f6b40-d3a5-11f0-9e08-0744b7aeb8a7",
+      "name": "aaa",
+      "lastName": "bbb",
+      "balance": 0,
+      "accountType": "AMBROSIA"
+    },
+    {
+      "id": "05e0dd20-d3a6-11f0-8028-8189e41f4b39",
+      "name": "aa1",
+      "lastName": "bb2",
+      "balance": 0,
+      "accountType": "PUDIM"
+    }
+  ],
+  "transactions": [
+    {
+      "id": "59238",
+      "senderAccountId": "ID001",
+      "receiverAccountId": "ID002",
+      "date": 1723054321877,
+      "amount": 5,
+      "taxes": 0
+    },
+    {
+      "id": "17612",
+      "senderAccountId": "ID001",
+      "receiverAccountId": "ID002",
+      "date": 1723054722240,
+      "amount": 8,
+      "taxes": 0
+    }
+  ]
+}
