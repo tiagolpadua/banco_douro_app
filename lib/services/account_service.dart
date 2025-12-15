@@ -18,6 +18,9 @@ class AccountService {
   }
 
   Future<List<Account>> getAll() async {
+    // try {
+    await Future.delayed(Duration(seconds: 1));
+
     Response response = await get(Uri.parse(url));
     _streamController.add("${DateTime.now()} | Requisição de leitura.");
 
@@ -26,12 +29,18 @@ class AccountService {
     List<Account> listAccounts = [];
 
     for (dynamic dyn in listDynamic) {
-      Map<String, dynamic> mapAccount = dyn as Map<String, dynamic>;
+      final mapAccount = dyn as Map<String, dynamic>;
       Account account = Account.fromMap(mapAccount);
       listAccounts.add(account);
     }
 
     return listAccounts;
+    // } catch (e) {
+    //   _streamController.add(
+    //     "${DateTime.now()} | Erro na requisição de leitura: $e",
+    //   );
+    //   return [];
+    // }
   }
 
   addAccount(Account account) async {

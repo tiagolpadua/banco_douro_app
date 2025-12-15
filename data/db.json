@@ -94,6 +94,34 @@
       "lastName": "bb2",
       "balance": 0,
       "accountType": "PUDIM"
+    },
+    {
+      "id": "32f49a50-da08-11f0-97eb-67777a2318d6",
+      "name": "tiago",
+      "lastName": "lage",
+      "balance": 0,
+      "accountType": "AMBROSIA"
+    },
+    {
+      "id": "9f0ae410-da08-11f0-97eb-67777a2318d6",
+      "name": "joao",
+      "lastName": "silva",
+      "balance": 0,
+      "accountType": "AMBROSIA"
+    },
+    {
+      "id": "b9a7c9a0-da08-11f0-97eb-67777a2318d6",
+      "name": "ana",
+      "lastName": "paula",
+      "balance": 0,
+      "accountType": "AMBROSIA"
+    },
+    {
+      "id": "e57a81d0-da08-11f0-8bf2-9d080d345e6f",
+      "name": "pedro",
+      "lastName": "oliveira",
+      "balance": 0,
+      "accountType": "AMBROSIA"
     }
   ],
   "transactions": [

@@ -23,6 +23,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    print("Rebuild HomeScreen...");
     return Scaffold(
       appBar: AppBar(
         backgroundColor: AppColor.lightGrey,
@@ -50,39 +51,50 @@ class _HomeScreenState extends State<HomeScreen> {
         backgroundColor: AppColor.orange,
         child: const Icon(Icons.add, color: Colors.black),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: RefreshIndicator(
-          onRefresh: refreshGetAll,
-          child: FutureBuilder(
-            future: _futureGetAll,
-            builder: (context, snapshot) {
-              switch (snapshot.connectionState) {
-                case ConnectionState.none:
-                  return const Center(child: CircularProgressIndicator());
-                case ConnectionState.waiting:
-                  return const Center(child: CircularProgressIndicator());
-                case ConnectionState.active:
-                  return const Center(child: CircularProgressIndicator());
-                case ConnectionState.done:
-                  {
-                    if (snapshot.data == null || snapshot.data!.isEmpty) {
-                      return const Center(
-                        child: Text("Nenhuma conta recebida."),
-                      );
-                    } else {
-                      List<Account> listAccounts = snapshot.data!;
-                      return ListView.builder(
-                        itemCount: listAccounts.length,
-                        itemBuilder: (context, index) {
-                          Account account = listAccounts[index];
-                          return AccountWidget(account: account);
-                        },
-                      );
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: RefreshIndicator(
+            onRefresh: refreshGetAll,
+            child: FutureBuilder(
+              future: _futureGetAll,
+              builder: (context, snapshot) {
+                print("FutureBuilder rebuild...");
+                switch (snapshot.connectionState) {
+                  case ConnectionState.none:
+                  case ConnectionState.waiting:
+                  case ConnectionState.active:
+                    return const Center(
+                      child: CircularProgressIndicator(color: Colors.purple),
+                    );
+                  case ConnectionState.done:
+                    {
+                      if (snapshot.error != null) {
+                        return Center(
+                          child: Text(
+                            "Erro ao consultar contas: ${snapshot.error}",
+                          ),
+                        );
+                      }
+
+                      if (snapshot.data == null || snapshot.data!.isEmpty) {
+                        return const Center(
+                          child: Text("Nenhuma conta recebida."),
+                        );
+                      } else {
+                        List<Account> listAccounts = snapshot.data!;
+                        return ListView.builder(
+                          itemCount: listAccounts.length,
+                          itemBuilder: (context, index) {
+                            Account account = listAccounts[index];
+                            return AccountWidget(account: account);
+                          },
+                        );
+                      }
                     }
-                  }
-              }
-            },
+                }
+              },
+            ),
           ),
         ),
       ),

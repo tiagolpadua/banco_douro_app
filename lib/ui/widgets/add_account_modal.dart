@@ -159,4 +159,11 @@ class _AddAccountModalState extends State<AddAccountModal> {
   closeModal() {
     Navigator.pop(context);
   }
+
+  @override
+  dispose() {
+    _nameController.dispose();
+    _lastNameController.dispose();
+    super.dispose();
+  }
 }
