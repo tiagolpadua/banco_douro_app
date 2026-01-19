@@ -18,6 +18,7 @@ class AccountService {
   }
 
   Future<List<Account>> getAll() async {
+    print("Fetching all accounts from remote server...");
     // try {
     await Future.delayed(Duration(seconds: 1));
 

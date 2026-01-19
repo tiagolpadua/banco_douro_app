@@ -1,3 +1,4 @@
+import 'package:banco_douro_app/viewmodels/account_viewmodel.dart';
 import 'package:flutter/material.dart';
 import '/models/account.dart';
 import '/services/account_service.dart';
@@ -13,11 +14,17 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  Future<List<Account>> _futureGetAll = AccountService().getAll();
+  AccountViewModel _accountViewModel = AccountViewModel();
+  List<Account> _listAccounts = [];
+
+  _HomeScreenState() {
+    refreshGetAll();
+  }
 
   Future<void> refreshGetAll() async {
+    await _accountViewModel.loadAccounts();
     setState(() {
-      _futureGetAll = AccountService().getAll();
+      _listAccounts = _accountViewModel.accounts;
     });
   }
 
@@ -54,47 +61,18 @@ class _HomeScreenState extends State<HomeScreen> {
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
-          child: RefreshIndicator(
-            onRefresh: refreshGetAll,
-            child: FutureBuilder(
-              future: _futureGetAll,
-              builder: (context, snapshot) {
-                print("FutureBuilder rebuild...");
-                switch (snapshot.connectionState) {
-                  case ConnectionState.none:
-                  case ConnectionState.waiting:
-                  case ConnectionState.active:
-                    return const Center(
-                      child: CircularProgressIndicator(color: Colors.purple),
-                    );
-                  case ConnectionState.done:
-                    {
-                      if (snapshot.error != null) {
-                        return Center(
-                          child: Text(
-                            "Erro ao consultar contas: ${snapshot.error}",
-                          ),
-                        );
-                      }
-
-                      if (snapshot.data == null || snapshot.data!.isEmpty) {
-                        return const Center(
-                          child: Text("Nenhuma conta recebida."),
-                        );
-                      } else {
-                        List<Account> listAccounts = snapshot.data!;
-                        return ListView.builder(
-                          itemCount: listAccounts.length,
-                          itemBuilder: (context, index) {
-                            Account account = listAccounts[index];
-                            return AccountWidget(account: account);
-                          },
-                        );
-                      }
-                    }
-                }
-              },
-            ),
+          child: Column(
+            children: [
+              Expanded(
+                child: ListView.builder(
+                  itemCount: _listAccounts.length,
+                  itemBuilder: (context, index) {
+                    Account account = _listAccounts[index];
+                    return AccountWidget(account: account);
+                  },
+                ),
+              ),
+            ],
           ),
         ),
       ),
