@@ -1,5 +1,6 @@
 import 'package:banco_douro_app/data/database/database_helper.dart';
 import 'package:banco_douro_app/models/account.dart';
+import 'package:flutter/rendering.dart';
 import 'package:sqflite/sqflite.dart';
 
 class AccountLocalRepository {
@@ -9,18 +10,18 @@ class AccountLocalRepository {
 
   Future<int> insert(Account account) async {
     final db = await _dbHelper.database;
-    print("Inserting account locally: ${account.toJson()}");
+    debugPrint("Inserting account locally: ${account.toJson()}");
     final result = await db.insert(
       _tableName,
       _accountToMap(account),
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
-    print("Inserted account with id: ${account.id}");
+    debugPrint("Inserted account with id: ${account.id}");
     return result;
   }
 
   Future<void> insertAll(List<Account> accounts) async {
-    print("Inserting ${accounts.length} accounts locally...");
+    debugPrint("Inserting ${accounts.length} accounts locally...");
     final db = await _dbHelper.database;
 
     await db.transaction((txn) async {
@@ -37,7 +38,7 @@ class AccountLocalRepository {
   }
 
   Future<List<Account>> getAll() async {
-    print("Fetching all accounts from local database...");
+    debugPrint("Fetching all accounts from local database...");
     final db = await _dbHelper.database;
 
     final List<Map<String, dynamic>> maps = await db.query(

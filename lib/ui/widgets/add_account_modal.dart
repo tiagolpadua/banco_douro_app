@@ -127,13 +127,13 @@ class _AddAccountModalState extends State<AddAccountModal> {
     );
   }
 
-  onButtonCancelClicked() {
+  void onButtonCancelClicked() {
     if (!isLoading) {
       Navigator.pop(context);
     }
   }
 
-  onButtonSendClicked() async {
+  Future<void> onButtonSendClicked() async {
     if (!isLoading) {
       setState(() {
         isLoading = true;
@@ -156,7 +156,7 @@ class _AddAccountModalState extends State<AddAccountModal> {
     }
   }
 
-  closeModal() {
+  void closeModal() {
     Navigator.pop(context);
   }
 

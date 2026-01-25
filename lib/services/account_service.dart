@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/material.dart';
 import 'package:http/http.dart';
 import 'dart:convert';
 
@@ -13,12 +14,12 @@ class AccountService {
 
   AccountService() {
     _streamController.stream.listen((message) {
-      print(message);
+      debugPrint(message);
     });
   }
 
   Future<List<Account>> getAll() async {
-    print("Fetching all accounts from remote server...");
+    debugPrint("Fetching all accounts from remote server...");
     // try {
     await Future.delayed(Duration(seconds: 1));
 
@@ -44,7 +45,7 @@ class AccountService {
     // }
   }
 
-  addAccount(Account account) async {
+  Future<void> addAccount(Account account) async {
     Response response = await post(
       Uri.parse(url),
       headers: {"Content-Type": "application/json"},
@@ -62,7 +63,10 @@ class AccountService {
     }
   }
 
-  save(List<Account> listAccounts, {String accountName = ""}) async {
+  Future<void> save(
+    List<Account> listAccounts, {
+    String accountName = "",
+  }) async {
     // Implementação removida - usar addAccount para adicionar contas individuais
     _streamController.add("${DateTime.now()} | Método save depreciado.");
   }

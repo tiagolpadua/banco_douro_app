@@ -89,7 +89,7 @@ class TransactionService {
     return listTransactions;
   }
 
-  addTransaction(Transaction trans) async {
+  Future<void> addTransaction(Transaction trans) async {
     await post(
       Uri.parse(url),
       headers: {"Content-Type": "application/json"},
@@ -97,7 +97,7 @@ class TransactionService {
     );
   }
 
-  save(List<Transaction> listTransactions) async {
+  Future<void> save(List<Transaction> listTransactions) async {
     // Método depreciado - usar addTransaction para adicionar transações individuais
   }
 }

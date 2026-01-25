@@ -1,7 +1,7 @@
 import 'package:banco_douro_app/viewmodels/account_viewmodel.dart';
 import 'package:flutter/material.dart';
+
 import '/models/account.dart';
-import '/services/account_service.dart';
 import '/ui/widgets/account_widget.dart';
 import '/ui/widgets/add_account_modal.dart';
 import 'styles/colors.dart';
@@ -14,7 +14,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  AccountViewModel _accountViewModel = AccountViewModel();
+  final AccountViewModel _accountViewModel = AccountViewModel();
   List<Account> _listAccounts = [];
 
   _HomeScreenState() {
@@ -30,7 +30,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    print("Rebuild HomeScreen...");
+    debugPrint("Rebuild HomeScreen...");
     return Scaffold(
       appBar: AppBar(
         backgroundColor: AppColor.lightGrey,

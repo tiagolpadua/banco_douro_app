@@ -1,6 +1,6 @@
+import 'package:flutter/cupertino.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
-import 'package:sqflite/sqlite_api.dart';
 
 class DatabaseHelper {
   static final DatabaseHelper instance = DatabaseHelper._init();
@@ -33,7 +33,7 @@ class DatabaseHelper {
   }
 
   Future<void> _onOpen(Database db) async {
-    print("Database opened: ${db.path}");
+    debugPrint("Database opened: ${db.path}");
   }
 
   Future<void> _createDB(Database db, int version) async {
@@ -60,7 +60,7 @@ class DatabaseHelper {
   /// }
   /// ```
   Future<void> _upgradeDB(Database db, int oldVersion, int newVersion) async {
-    print('📦 Migrando banco da versão $oldVersion para $newVersion');
+    debugPrint('📦 Migrando banco da versão $oldVersion para $newVersion');
 
     // Adicione migrações aqui conforme necessário
     // if (oldVersion < 2) {
