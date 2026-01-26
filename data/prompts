@@ -1,0 +1,27 @@
+You are an expert Flutter developer and code reviewer. I have a Flutter project in the current directory. Please analyze the entire project, including all Dart files, pubspec.yaml, assets, and any other relevant files or folders.
+
+Your analysis should cover the following areas:
+
+1. **Bugs and Errors**: Identify any potential bugs, runtime errors, null safety issues, deprecated APIs, incorrect widget usage, state management problems, or logical flaws in the code. Provide specific file paths, line numbers (if possible), and explanations for each issue.
+
+2. **Performance Improvements**: Suggest optimizations for app performance, such as reducing unnecessary rebuilds, improving image loading, efficient use of lists (e.g., ListView.builder), memory management, or async operations.
+
+3. **Code Quality and Best Practices**: Recommend adherence to Flutter best practices, including:
+   - Proper widget composition and separation of concerns (e.g., using StatelessWidget where possible).
+   - State management (e.g., Provider, Riverpod, Bloc) – evaluate if the current approach is suitable and suggest alternatives if needed.
+   - Error handling and logging.
+   - Accessibility features (e.g., semantics, screen reader support).
+   - Code organization: Clean architecture, folder structure, naming conventions, and documentation.
+   - Dependency management: Check for outdated packages in pubspec.yaml and suggest updates or removals.
+   - Testing: Note if unit/widget/integration tests are missing and suggest additions.
+
+4. **Security and Platform-Specific Issues**: Flag any security vulnerabilities (e.g., insecure data storage, API keys in code), platform differences (iOS vs. Android), or internationalization readiness.
+
+Structure your response as follows:
+- **Summary**: A high-level overview of the project's strengths and weaknesses.
+- **Detailed Findings**: Categorized sections for Bugs, Improvements, and Best Practices, with bullet points for each item.
+- **Recommendations**: Prioritized list of actions to take, with estimated effort (low/medium/high).
+
+If any files are missing or the project seems incomplete, note that and suggest what might be needed. Assume the project is for a standard mobile app unless otherwise indicated.
+
+Save analysis in a file in the root directory named flutter_project_analysis.txt.

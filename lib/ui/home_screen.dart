@@ -17,12 +17,15 @@ class _HomeScreenState extends State<HomeScreen> {
   final AccountViewModel _accountViewModel = AccountViewModel();
   List<Account> _listAccounts = [];
 
-  _HomeScreenState() {
+  @override
+  void initState() {
+    super.initState();
     refreshGetAll();
   }
 
   Future<void> refreshGetAll() async {
     await _accountViewModel.loadAccounts();
+    await _accountViewModel.loadAccountTypes();
     setState(() {
       _listAccounts = _accountViewModel.accounts;
     });
@@ -68,7 +71,10 @@ class _HomeScreenState extends State<HomeScreen> {
                   itemCount: _listAccounts.length,
                   itemBuilder: (context, index) {
                     Account account = _listAccounts[index];
-                    return AccountWidget(account: account);
+                    return AccountWidget(
+                      account: account,
+                      accountTypes: _accountViewModel.accountTypes,
+                    );
                   },
                 ),
               ),

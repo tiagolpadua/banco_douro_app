@@ -79,7 +79,7 @@ class AccountLocalRepository {
       'name': account.name,
       'last_name': account.lastName,
       'balance': account.balance,
-      'account_type': 'x',
+      'account_type_id': account.accountTypeId,
     };
   }
 
@@ -89,7 +89,7 @@ class AccountLocalRepository {
       name: map['name'] as String,
       lastName: map['last_name'] as String,
       balance: (map['balance'] as num).toDouble(),
-      accountType: map['account_type'] as String,
+      accountTypeId: map['account_type_id'] as String?,
     );
   }
 }

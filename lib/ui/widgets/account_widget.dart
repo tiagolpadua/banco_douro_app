@@ -2,11 +2,24 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import '/models/account.dart';
+import '/models/account_type.dart';
 import '/ui/styles/colors.dart';
 
 class AccountWidget extends StatelessWidget {
   final Account account;
-  const AccountWidget({super.key, required this.account});
+  final List<AccountType> accountTypes;
+
+  const AccountWidget({
+    super.key,
+    required this.account,
+    required this.accountTypes,
+  });
+
+  String _getAccountTypeDescription() {
+    if (account.accountTypeId == null) return "Sem tipo definido";
+    final type = accountTypes.where((t) => t.id == account.accountTypeId).firstOrNull;
+    return type?.description ?? "Tipo desconhecido";
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -34,7 +47,7 @@ class AccountWidget extends StatelessWidget {
               ),
               Text("ID: ${account.id.substring(0, min(account.id.length, 5))}"),
               Text("Saldo: ${account.balance.toStringAsFixed(2)}"),
-              Text("Tipo: ${account.accountType ?? "Sem tipo definido."}"),
+              Text("Tipo: ${_getAccountTypeDescription()}"),
             ],
           ),
           IconButton(onPressed: () {}, icon: const Icon(Icons.settings)),

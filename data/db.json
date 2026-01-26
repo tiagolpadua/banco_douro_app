@@ -4,142 +4,60 @@
       "id": "ID001",
       "name": "Ricarth",
       "lastName": "Lima",
-      "balance": 113
+      "balance": 113,
+      "accountTypeId": "1"
     },
     {
       "id": "ID002",
       "name": "Ana",
       "lastName": "Silva",
-      "balance": 250
+      "balance": 250,
+      "accountTypeId": "1"
     },
     {
       "id": "ID003",
       "name": "Bruno",
       "lastName": "Santos",
-      "balance": 75
+      "balance": 75,
+      "accountTypeId": "2"
     },
     {
-      "id": "ID004",
-      "name": "Carla",
-      "lastName": "Oliveira",
-      "balance": 500
-    },
-    {
-      "id": "ID005",
-      "name": "Daniel",
-      "lastName": "Ferreira",
-      "balance": 180
-    },
-    {
-      "id": "ID006",
-      "name": "Elisa",
-      "lastName": "Costa",
-      "balance": 320
-    },
-    {
-      "id": "ID007",
-      "name": "Fábio",
-      "lastName": "Pereira",
-      "balance": 60
-    },
-    {
-      "id": "ID008",
-      "name": "Gabriela",
-      "lastName": "Rodrigues",
-      "balance": 200
-    },
-    {
-      "id": "ID009",
-      "name": "Henrique",
-      "lastName": "Martins",
-      "balance": 450
-    },
-    {
-      "id": "ID010",
-      "name": "Isabela",
-      "lastName": "Almeida",
-      "balance": 210
-    },
-    {
-      "id": "64229290-d3a4-11f0-bde3-09c88c6c5640",
-      "name": "foo",
-      "lastName": "gar",
+      "id": "8e542080-fa49-11f0-95d7-afae49f0562e",
+      "name": "",
+      "lastName": "",
       "balance": 0,
-      "accountType": "AMBROSIA"
+      "accountTypeId": "2"
     },
     {
-      "id": "95a8d620-d3a5-11f0-9e08-0744b7aeb8a7",
+      "id": "622ee610-fa4a-11f0-bf0e-f3bd64eaa06e",
+      "name": "",
+      "lastName": "",
+      "balance": 0,
+      "accountTypeId": "1"
+    },
+    {
+      "id": "af09bbe0-fa4a-11f0-bf0e-f3bd64eaa06e",
       "name": "foo",
       "lastName": "bar",
       "balance": 0,
-      "accountType": "PUDIM"
+      "accountTypeId": "2"
     },
     {
-      "id": "aacd2100-d3a5-11f0-9e08-0744b7aeb8a7",
-      "name": "bar ",
-      "lastName": "baz",
+      "id": "bc2ee840-fa4a-11f0-bf0e-f3bd64eaa06e",
+      "name": "evandro ",
+      "lastName": "freitas",
       "balance": 0,
-      "accountType": "BRIGADEIRO"
-    },
-    {
-      "id": "bd3f6b40-d3a5-11f0-9e08-0744b7aeb8a7",
-      "name": "aaa",
-      "lastName": "bbb",
-      "balance": 0,
-      "accountType": "AMBROSIA"
-    },
-    {
-      "id": "05e0dd20-d3a6-11f0-8028-8189e41f4b39",
-      "name": "aa1",
-      "lastName": "bb2",
-      "balance": 0,
-      "accountType": "PUDIM"
-    },
-    {
-      "id": "32f49a50-da08-11f0-97eb-67777a2318d6",
-      "name": "tiago",
-      "lastName": "lage",
-      "balance": 0,
-      "accountType": "AMBROSIA"
-    },
-    {
-      "id": "9f0ae410-da08-11f0-97eb-67777a2318d6",
-      "name": "joao",
-      "lastName": "silva",
-      "balance": 0,
-      "accountType": "AMBROSIA"
-    },
-    {
-      "id": "b9a7c9a0-da08-11f0-97eb-67777a2318d6",
-      "name": "ana",
-      "lastName": "paula",
-      "balance": 0,
-      "accountType": "AMBROSIA"
-    },
-    {
-      "id": "e57a81d0-da08-11f0-8bf2-9d080d345e6f",
-      "name": "pedro",
-      "lastName": "oliveira",
-      "balance": 0,
-      "accountType": "AMBROSIA"
+      "accountTypeId": "1"
     }
   ],
-  "transactions": [
+  "accountTypes": [
     {
-      "id": "59238",
-      "senderAccountId": "ID001",
-      "receiverAccountId": "ID002",
-      "date": 1723054321877,
-      "amount": 5,
-      "taxes": 0
+      "id": "1",
+      "description": "Corrente"
     },
     {
-      "id": "17612",
-      "senderAccountId": "ID001",
-      "receiverAccountId": "ID002",
-      "date": 1723054722240,
-      "amount": 8,
-      "taxes": 0
+      "id": "2",
+      "description": "Poupança"
     }
   ]
 }

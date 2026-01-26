@@ -9,8 +9,8 @@ class DatabaseHelper {
 
   DatabaseHelper._init();
 
-  /// Obtém a instância do banco de dados.
-  /// Cria o banco se não existir.
+  /// Obtem a instancia do banco de dados.
+  /// Cria o banco se nao existir.
   Future<Database> get database async {
     if (_database != null) return _database!;
     _database = await _initDB();
@@ -25,7 +25,7 @@ class DatabaseHelper {
 
     return await openDatabase(
       path,
-      version: 1,
+      version: 2, // Incrementado para forcar recriacao do schema
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
       onOpen: _onOpen,
@@ -43,28 +43,27 @@ class DatabaseHelper {
         name TEXT NOT NULL,
         last_name TEXT NOT NULL,
         balance REAL DEFAULT 0,
-        account_type TEXT NOT NULL
+        account_type_id TEXT
       )
     ''');
   }
 
-  /// Migra o banco para versões mais novas
-  ///
-  /// Exemplo de migração:
-  /// ```dart
-  /// if (oldVersion < 2) {
-  ///   await db.execute('ALTER TABLE accounts ADD COLUMN phone TEXT');
-  /// }
-  /// if (oldVersion < 3) {
-  ///   await db.execute('ALTER TABLE accounts ADD COLUMN email TEXT');
-  /// }
-  /// ```
+  /// Migra o banco para versoes mais novas
   Future<void> _upgradeDB(Database db, int oldVersion, int newVersion) async {
-    debugPrint('📦 Migrando banco da versão $oldVersion para $newVersion');
+    debugPrint('Migrando banco da versao $oldVersion para $newVersion');
 
-    // Adicione migrações aqui conforme necessário
-    // if (oldVersion < 2) {
-    //   await db.execute('ALTER TABLE accounts ADD COLUMN phone TEXT');
-    // }
+    if (oldVersion < 2) {
+      // Recria a tabela com a nova estrutura
+      await db.execute('DROP TABLE IF EXISTS accounts');
+      await db.execute('''
+        CREATE TABLE accounts (
+          id TEXT PRIMARY KEY,
+          name TEXT NOT NULL,
+          last_name TEXT NOT NULL,
+          balance REAL DEFAULT 0,
+          account_type_id TEXT
+        )
+      ''');
+    }
   }
 }

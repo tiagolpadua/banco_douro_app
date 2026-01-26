@@ -1,0 +1,569 @@
+================================================================================
+                     FLUTTER PROJECT ANALYSIS REPORT
+                          Banco Douro App
+================================================================================
+
+Generated: January 2025
+Project: banco_douro_app (Flutter Mobile Banking Application)
+Version: 1.0.0+1
+Dart SDK: 3.10.3+
+
+================================================================================
+1. SUMMARY
+================================================================================
+
+PROJECT OVERVIEW
+----------------
+Banco Douro is a Flutter mobile banking application implementing account
+management and transaction processing with local (SQLite) and remote (HTTP REST)
+data persistence. The app follows an MVVM-style architecture with separation
+between models, services, repositories, viewmodels, and UI layers.
+
+STRENGTHS
+---------
+- Clean separation of concerns with layered architecture
+- Proper use of Dart idioms (factory constructors, copyWith patterns)
+- Local database integration with SQLite for offline support
+- Custom exception classes for business logic errors
+- Type-safe model classes with JSON serialization
+- Stream-based logging in services
+
+WEAKNESSES
+----------
+- Critical security vulnerabilities (HTTP, debug signing, weak IDs)
+- Error handling is commented out or missing throughout
+- 0% test coverage (only boilerplate test exists)
+- Hardcoded configuration values (URLs, delays, account types)
+- Memory leaks (unclosed StreamController)
+- No input validation in UI or services
+- No state management framework
+- Missing accessibility features
+
+ISSUE SUMMARY BY SEVERITY
+-------------------------
+| Severity | Count | Primary Categories                              |
+|----------|-------|------------------------------------------------|
+| Critical |   18  | Security, error handling, data integrity       |
+| High     |   22  | Performance, validation, network handling      |
+| Medium   |   28  | Code quality, localization, null safety        |
+| Low      |   14  | Debug statements, empty callbacks, cosmetic    |
+| TOTAL    |   82  |                                                |
+
+================================================================================
+2. DETAILED FINDINGS
+================================================================================
+
+--------------------------------------------------------------------------------
+2.1 BUGS AND ERRORS
+--------------------------------------------------------------------------------
+
+CRITICAL BUGS
+-------------
+
+[C01] Commented Out Error Handling
+     File: lib/services/account_service.dart:23-45
+     Description: All try-catch blocks are commented out. Network failures,
+     JSON parsing errors, or invalid responses will crash the app.
+     Impact: App crashes on any network issue.
+
+[C02] StreamController Memory Leak
+     File: lib/services/account_service.dart:10-11
+     Description: StreamController is created but never closed. No dispose()
+     method exists. Every instance of AccountService leaks memory.
+     Impact: Memory leak, potential app crashes.
+
+[C03] Hardcoded Account Type in Repository
+     File: lib/data/repositories/account_local_repository.dart:82
+     Description: Account type is hardcoded as 'x' instead of using
+     account.accountType. All account types are lost when saving locally.
+     Impact: Data corruption, tax calculations will fail.
+     Code: 'account_type': 'x',  // Should be: account.accountType
+
+[C04] Weak Transaction ID Generation
+     File: lib/services/transaction_service.dart:64
+     Description: Uses Random().nextInt(89999) + 10000 for transaction IDs.
+     Only 90,000 possible values, high collision risk, not cryptographically
+     secure.
+     Impact: Transaction ID collisions, security vulnerability.
+     Fix: Use uuid package: const Uuid().v4()
+
+[C05] HTTP Response Not Validated
+     File: lib/services/transaction_service.dart:77
+     Description: response.body decoded without checking HTTP status code.
+     Invalid responses will throw uncaught exceptions.
+     Impact: App crashes on server errors.
+
+[C06] No Error Handling in addTransaction
+     File: lib/services/transaction_service.dart:92-97
+     Description: POST request has no error handling, status code validation,
+     or timeout. Network errors crash the application silently.
+     Impact: Silent failures, app crashes.
+
+[C07] Async Operation in Constructor
+     File: lib/ui/home_screen.dart:20-22
+     Description: _HomeScreenState constructor calls refreshGetAll() which is
+     async. Constructors should not perform async operations.
+     Impact: Race conditions, state accessed before initialization.
+     Fix: Move to initState() method.
+
+[C08] Missing Return Type in dispose()
+     File: lib/ui/widgets/add_account_modal.dart:163-168
+     Description: dispose() method missing void return type.
+     Code: dispose() { ... }  // Should be: void dispose() { ... }
+     Impact: Lifecycle management issues.
+
+HIGH SEVERITY BUGS
+------------------
+
+[H01] Incorrect Status Code Validation
+     File: lib/services/account_service.dart:55
+     Description: Uses response.statusCode.toString()[0] == "2" which is
+     fragile string manipulation instead of numeric comparison.
+     Fix: Use response.statusCode >= 200 && response.statusCode < 300
+
+[H02] Missing HTTP Timeout
+     File: lib/services/account_service.dart:26
+     Description: No timeout on HTTP GET request. App could hang indefinitely.
+     Fix: Add .timeout(Duration(seconds: 30))
+
+[H03] Hardcoded isOnline Flag
+     File: lib/viewmodels/account_viewmodel.dart:9
+     Description: final isOnline = true is hardcoded. Offline logic never runs.
+     Impact: Offline-first architecture is non-functional.
+
+[H04] Unsafe Type Cast in Repository
+     File: lib/data/repositories/account_local_repository.dart:91
+     Description: (map['balance'] as num).toDouble() fails if balance is
+     stored as string or null.
+     Impact: App crashes on database read.
+
+[H05] Double List Traversal
+     File: lib/services/transaction_service.dart:23-37
+     Description: Uses .where().isEmpty then .firstWhere() - searches list
+     twice unnecessarily.
+     Impact: O(2n) instead of O(n) performance.
+
+[H06] Inefficient List Index Operations
+     File: lib/services/transaction_service.dart:55-61
+     Description: Uses indexWhere() twice to update list elements.
+     Impact: Unnecessary list traversals.
+
+[H07] No Error Handling in refreshGetAll
+     File: lib/ui/home_screen.dart:24-29
+     Description: No try-catch. Exceptions propagate and crash the app.
+
+[H08] ListView Without Keys
+     File: lib/ui/home_screen.dart:67-73
+     Description: AccountWidget items created without keys. Causes state
+     preservation issues when list changes.
+     Fix: Add key: ValueKey(account.id)
+
+[H09] No Input Validation in Login
+     File: lib/ui/login_screen.dart:36-62
+     Description: Email and password fields have no validation. Login doesn't
+     actually authenticate - just navigates.
+     Impact: Security vulnerability, no user feedback.
+
+[H10] setState After Dispose Risk
+     File: lib/ui/widgets/add_account_modal.dart:136-157
+     Description: After async addAccount(), closeModal() is called but widget
+     may be disposed. setState on disposed widget causes errors.
+     Fix: Add if (mounted) check before closeModal()
+
+MEDIUM SEVERITY BUGS
+--------------------
+
+[M01] No Validation in Transaction.fromMap
+     File: lib/models/transaction.dart:48-57
+     Description: No null safety checks. Missing fields throw uncaught errors.
+
+[M02] No Validation in Transaction.fromJson
+     File: lib/models/transaction.dart:61-62
+     Description: Invalid JSON throws uncaught FormatException.
+
+[M03] Missing Amount Validation
+     File: lib/models/transaction.dart:10-17
+     Description: Negative amounts and taxes can be created.
+
+[M04] Missing Balance Validation
+     File: lib/models/account.dart:10-16
+     Description: Accounts can be created with negative balances.
+
+[M05] Inconsistent Equality Check
+     File: lib/models/account.dart:69-76
+     Description: accountType excluded from operator == but used elsewhere.
+
+[M06] Unsafe ID Conversion
+     File: lib/models/account.dart:18-30
+     Description: map['id'].toString() converts null to string "null".
+
+[M07] Missing Stream Error Handler
+     File: lib/services/account_service.dart:16-18
+     Description: Stream listener has no onError callback.
+
+[M08] Inconsistent Tax Calculation
+     File: lib/helpers/helper_taxes.dart:7-21
+     Description: Returns 0.1 fixed value for null accountType instead of
+     percentage like other types. Inconsistent business logic.
+
+[M09] Exception Missing toString()
+     File: lib/exceptions/transaction_exceptions.dart:7-19
+     Description: InsufficientFundsException lacks toString() override.
+     Logging shows unhelpful output.
+
+LOW SEVERITY BUGS
+-----------------
+
+[L01] Unnecessary Hardcoded Delay
+     File: lib/services/account_service.dart:24
+     Description: Future.delayed(Duration(seconds: 1)) artificially delays
+     every request by 1 second.
+
+[L02] Debug Print in Production
+     File: lib/ui/home_screen.dart:33
+     Description: debugPrint("Rebuild HomeScreen...") left in code.
+
+[L03] Empty IconButton Callback
+     File: lib/ui/widgets/account_widget.dart:40
+     Description: Settings button has onPressed: () {} - does nothing.
+
+[L04] Deprecated Method Not Annotated
+     File: lib/services/transaction_service.dart:100-102
+     Description: save() method marked deprecated in comment but lacks
+     @deprecated annotation.
+
+--------------------------------------------------------------------------------
+2.2 PERFORMANCE IMPROVEMENTS
+--------------------------------------------------------------------------------
+
+[P01] Unnecessary Widget Rebuilds
+     File: lib/ui/home_screen.dart:32-80
+     Description: Entire widget tree rebuilds on every state change.
+     Fix: Use const constructors, FutureBuilder, or StreamBuilder.
+     Effort: Medium
+
+[P02] Double List Traversal in Transaction
+     File: lib/services/transaction_service.dart:23-37
+     Description: Account lookup done twice (where + firstWhere).
+     Fix: Use single firstWhere with orElse.
+     Effort: Low
+
+[P03] Double Index Lookup for Updates
+     File: lib/services/transaction_service.dart:55-61
+     Description: indexWhere called twice for sender and receiver.
+     Fix: Use single loop to update both.
+     Effort: Low
+
+[P04] Artificial 1-Second Delay
+     File: lib/services/account_service.dart:24
+     Description: Hardcoded delay slows every account fetch.
+     Fix: Remove Future.delayed.
+     Effort: Low
+
+[P05] Dropdown Items Rebuilt Every Frame
+     File: lib/ui/widgets/add_account_modal.dart:66-74
+     Description: Dropdown items recreated on each build.
+     Fix: Extract to const list outside build method.
+     Effort: Low
+
+[P06] Missing const Constructors
+     Files: Multiple UI files
+     Description: Widgets that could be const are not marked const.
+     Fix: Add const where applicable.
+     Effort: Low
+
+[P07] No Request Timeout
+     Files: lib/services/account_service.dart, transaction_service.dart
+     Description: HTTP requests have no timeout configuration.
+     Fix: Add .timeout(Duration(seconds: 30)) to all requests.
+     Effort: Low
+
+[P08] No HTTP Connection Pooling
+     Files: lib/services/account_service.dart, transaction_service.dart
+     Description: New HTTP client created per request.
+     Fix: Use persistent http.Client instance.
+     Effort: Medium
+
+--------------------------------------------------------------------------------
+2.3 CODE QUALITY AND BEST PRACTICES
+--------------------------------------------------------------------------------
+
+WIDGET COMPOSITION
+------------------
+- HomeScreen calls async in constructor instead of initState()
+- Missing mounted checks before setState in async callbacks
+- StatefulWidget used where StatelessWidget might suffice (AccountWidget)
+- No separation of business logic from UI in screens
+
+STATE MANAGEMENT
+----------------
+- No state management framework (Provider, Riverpod, Bloc)
+- Basic ViewModel pattern without proper notification
+- Manual setState calls throughout
+- Hardcoded isOnline flag bypasses offline logic
+
+ERROR HANDLING
+--------------
+- Try-catch blocks commented out in AccountService
+- No global error handler
+- No user-friendly error messages
+- Exceptions lack meaningful toString() implementations
+- No retry logic for failed requests
+
+ACCESSIBILITY
+-------------
+- Missing Semantics widgets throughout UI
+- No semantic labels on interactive elements
+- No screen reader support
+- Empty onPressed callbacks confuse accessibility tools
+
+CODE ORGANIZATION
+-----------------
+- Clean architecture structure (models/services/data/viewmodels/ui)
+- Proper use of factory constructors
+- Good separation of concerns
+- Missing documentation and inline comments
+- No API documentation
+
+DEPENDENCY MANAGEMENT
+---------------------
+File: pubspec.yaml
+
+Current versions vs recommended:
+| Package         | Current  | Status      | Action                    |
+|-----------------|----------|-------------|---------------------------|
+| http            | ^1.6.0   | Check       | Verify latest stable      |
+| sqflite         | ^2.4.2   | OK          | Current                   |
+| uuid            | ^4.5.2   | OK          | Current                   |
+| flutter_lints   | ^6.0.0   | OK          | Consider very_good_analysis|
+
+Missing recommended packages:
+- provider/riverpod - State management
+- mockito/mocktail - Testing mocks
+- dartz/fpdart - Functional error handling
+- dio - Better HTTP client with interceptors
+- get_it - Dependency injection
+- logger - Structured logging
+
+TESTING
+-------
+File: test/widget_test.dart.txt
+
+Current state:
+- 1 boilerplate test file (references non-existent main.dart.old)
+- 0% code coverage
+- No unit tests for services
+- No unit tests for repositories
+- No unit tests for viewmodels
+- No widget tests
+- No integration tests
+
+Required tests:
+- AccountService: getAll, addAccount, error scenarios
+- TransactionService: makeTransaction, tax calculations
+- AccountLocalRepository: CRUD operations
+- AccountViewModel: loadAccounts, offline mode
+- Tax calculations: helper_taxes.dart
+- UI: Form validation, loading states
+
+--------------------------------------------------------------------------------
+2.4 SECURITY AND PLATFORM-SPECIFIC ISSUES
+--------------------------------------------------------------------------------
+
+NETWORK SECURITY
+----------------
+
+[S01] Unencrypted HTTP Communication (CRITICAL)
+     Files: lib/services/account_service.dart:13
+            lib/services/transaction_service.dart:14
+     Description: All API calls use HTTP instead of HTTPS. Account data,
+     balances, and transactions exposed to man-in-the-middle attacks.
+     URL: http://10.0.2.2:3000/accounts
+     Fix: Migrate to HTTPS, implement certificate pinning.
+     Effort: Medium
+
+[S02] Hardcoded API Endpoint (HIGH)
+     Files: lib/services/account_service.dart:13
+            lib/services/transaction_service.dart:14
+     Description: API URL hardcoded with Android emulator IP (10.0.2.2).
+     Won't work on real devices or iOS simulator.
+     Fix: Use environment-based configuration.
+     Effort: Medium
+
+[S03] No SSL Certificate Pinning (HIGH)
+     Description: Even with HTTPS, no certificate pinning implemented.
+     Fix: Implement ssl_pinning package for production.
+     Effort: Medium
+
+[S04] Sensitive Data in Logs (HIGH)
+     Files: Multiple (account_service.dart, account_local_repository.dart)
+     Description: Full account objects with balances logged via debugPrint.
+     Example: debugPrint("Inserting account locally: ${account.toJson()}")
+     Fix: Remove sensitive data from logs, use configurable log levels.
+     Effort: Low
+
+DATA STORAGE SECURITY
+---------------------
+
+[S05] Unencrypted Local Database (MEDIUM)
+     File: lib/data/database/database_helper.dart
+     Description: SQLite database stored unencrypted on device.
+     Fix: Use sqflite_sqlcipher for encrypted storage.
+     Effort: High
+
+[S06] No Secure Storage for Credentials (HIGH)
+     Description: No flutter_secure_storage for sensitive data.
+     Fix: Implement secure storage for tokens/credentials.
+     Effort: Medium
+
+INPUT VALIDATION
+----------------
+
+[S07] No Transaction Amount Validation (HIGH)
+     File: lib/services/transaction_service.dart:39-50
+     Description: No check for negative amounts or zero transactions.
+     Fix: Add amount > 0 validation.
+     Effort: Low
+
+[S08] No Form Validation (HIGH)
+     Files: lib/ui/login_screen.dart, add_account_modal.dart
+     Description: No email format, password strength, or name validation.
+     Fix: Add Form with TextFormField validators.
+     Effort: Medium
+
+PLATFORM-SPECIFIC: ANDROID
+--------------------------
+
+[S09] Release Signed with Debug Keys (CRITICAL)
+     File: android/app/build.gradle.kts:35-37
+     Code: signingConfig = signingConfigs.getByName("debug")
+     Description: Production builds signed with debug certificate. Insecure,
+     allows tampering, won't be accepted by Play Store.
+     Fix: Configure proper release signing with keystore.
+     Effort: Medium
+
+[S10] No ProGuard/R8 Obfuscation (MEDIUM)
+     File: android/app/build.gradle.kts
+     Description: No code obfuscation in release builds.
+     Fix: Add minifyEnabled true and proguard-rules.pro.
+     Effort: Low
+
+[S11] Example Package Name (MEDIUM)
+     File: android/app/build.gradle.kts:24
+     Description: Uses com.example.banco_douro_app placeholder.
+     Fix: Change to proper domain-based package name.
+     Effort: Low
+
+PLATFORM-SPECIFIC: iOS
+----------------------
+
+[S12] Missing App Transport Security Config (HIGH)
+     File: ios/Runner/Info.plist
+     Description: No NSAppTransportSecurity policy configured.
+     Fix: Add ATS configuration to restrict to HTTPS only.
+     Effort: Low
+
+[S13] Missing Privacy Descriptions (MEDIUM)
+     File: ios/Runner/Info.plist
+     Description: No privacy usage descriptions for camera, contacts, etc.
+     Fix: Add required NS*UsageDescription keys if features are used.
+     Effort: Low
+
+================================================================================
+3. RECOMMENDATIONS
+================================================================================
+
+IMMEDIATE PRIORITY (Critical - Fix before any deployment)
+---------------------------------------------------------
+Effort: Low = hours, Medium = 1-2 days, High = 3+ days
+
+| # | Issue | Action | Effort |
+|---|-------|--------|--------|
+| 1 | S01 | Migrate all HTTP to HTTPS | Medium |
+| 2 | C01 | Uncomment and fix error handling in AccountService | Low |
+| 3 | S09 | Configure proper release signing for Android | Medium |
+| 4 | C04 | Replace Random() with UUID for transaction IDs | Low |
+| 5 | C02 | Add dispose() to AccountService, close StreamController | Low |
+| 6 | C03 | Fix hardcoded account type in repository | Low |
+| 7 | C07 | Move async call from constructor to initState | Low |
+| 8 | S07 | Add transaction amount validation (> 0) | Low |
+
+SHORT-TERM PRIORITY (High - Fix before release)
+-----------------------------------------------
+
+| # | Issue | Action | Effort |
+|---|-------|--------|--------|
+| 9 | H02 | Add timeout to all HTTP requests | Low |
+| 10| H01 | Fix status code validation (numeric comparison) | Low |
+| 11| H08 | Add keys to ListView items | Low |
+| 12| H09 | Implement form validation for login/account creation | Medium |
+| 13| H10 | Add mounted checks before setState in async | Low |
+| 14| S04 | Remove sensitive data from debug logs | Low |
+| 15| S02 | Create environment-based API configuration | Medium |
+| 16| - | Add unit tests for services (aim for 70% coverage) | High |
+
+MEDIUM-TERM PRIORITY (Medium - Improve code quality)
+----------------------------------------------------
+
+| # | Issue | Action | Effort |
+|---|-------|--------|--------|
+| 17| M08 | Fix tax calculation logic consistency | Low |
+| 18| P02,P03| Optimize list traversal in TransactionService | Low |
+| 19| P01 | Reduce unnecessary widget rebuilds | Medium |
+| 20| - | Implement state management (Provider/Riverpod) | High |
+| 21| - | Add global error handler with user feedback | Medium |
+| 22| S05 | Implement encrypted local database | High |
+| 23| - | Add accessibility features (Semantics) | Medium |
+| 24| S10 | Configure ProGuard/R8 obfuscation | Low |
+
+================================================================================
+4. MISSING COMPONENTS
+================================================================================
+
+INFRASTRUCTURE
+--------------
+[ ] Environment configuration (dev/staging/prod)
+[ ] CI/CD pipeline (GitHub Actions, GitLab CI)
+[ ] Automated testing in CI
+[ ] Code coverage thresholds
+[ ] Pre-commit hooks for code quality
+
+ARCHITECTURE
+------------
+[ ] State management framework (Provider, Riverpod, Bloc)
+[ ] Dependency injection (GetIt, Injectable)
+[ ] Global error handling
+[ ] Structured logging framework
+[ ] HTTP interceptors for auth/logging
+[ ] Request retry logic with exponential backoff
+
+SECURITY
+--------
+[ ] HTTPS with certificate pinning
+[ ] Secure storage for credentials
+[ ] Database encryption
+[ ] Input sanitization
+[ ] Rate limiting awareness
+[ ] Session management
+
+QUALITY
+-------
+[ ] Unit tests (services, repositories, viewmodels)
+[ ] Widget tests (UI components)
+[ ] Integration tests (end-to-end flows)
+[ ] API documentation
+[ ] Architecture documentation
+[ ] Inline code documentation
+
+USER EXPERIENCE
+---------------
+[ ] Loading state indicators
+[ ] Error message display
+[ ] Offline mode indication
+[ ] Form validation feedback
+[ ] Accessibility support
+[ ] Internationalization (i18n)
+
+================================================================================
+END OF REPORT
+================================================================================
