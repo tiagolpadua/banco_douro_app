@@ -1,29 +1,29 @@
 import 'dart:async';
-
-import 'package:http/http.dart';
 import 'dart:convert';
 
+import 'package:http/http.dart' as http;
+import 'package:http_interceptor/http_interceptor.dart';
+import 'package:logger/logger.dart';
+
 import '../models/account.dart';
+import 'http_interceptors.dart';
 
 class AccountService {
-  final StreamController<String> _streamController = StreamController<String>();
-  Stream<String> get streamInfos => _streamController.stream;
+  Logger logger = Logger(printer: PrettyPrinter(methodCount: 0));
+
+  // Cliente HTTP com interceptador de logging
+  http.Client client = InterceptedClient.build(
+    interceptors: [LoggingInterceptor()],
+  );
 
   String url = "http://10.0.2.2:3000/accounts";
 
-  AccountService() {
-    _streamController.stream.listen((message) {
-      print(message);
-    });
-  }
-
   Future<List<Account>> getAll() async {
-    print("Fetching all accounts from remote server...");
-    // try {
-    await Future.delayed(Duration(seconds: 1));
+    logger.i("Fetching all accounts from remote server...");
 
-    Response response = await get(Uri.parse(url));
-    _streamController.add("${DateTime.now()} | Requisição de leitura.");
+    Response response = await client.get(Uri.parse(url));
+    // Response response = await get(Uri.parse(url));
+    logger.i("${DateTime.now()} | Requisição de leitura.");
 
     List<dynamic> listDynamic = json.decode(response.body);
 
@@ -36,34 +36,27 @@ class AccountService {
     }
 
     return listAccounts;
-    // } catch (e) {
-    //   _streamController.add(
-    //     "${DateTime.now()} | Erro na requisição de leitura: $e",
-    //   );
-    //   return [];
-    // }
   }
 
-  addAccount(Account account) async {
-    Response response = await post(
+  Future<bool> addAccount(Account account) async {
+    logger.i("Adding new account to remote server: ${account.toString()}");
+    String accountJSON = json.encode(account.toMap());
+
+    Response response = await client.post(
       Uri.parse(url),
       headers: {"Content-Type": "application/json"},
-      body: json.encode(account.toMap()),
+      body: accountJSON,
     );
 
-    if (response.statusCode.toString()[0] == "2") {
-      _streamController.add(
-        "${DateTime.now()} | Requisição adição bem sucedida (${account.name}).",
-      );
-    } else {
-      _streamController.add(
-        "${DateTime.now()} | Requisição falhou (${account.name}).",
-      );
+    if (response.statusCode == 201) {
+      return true;
     }
+
+    return false;
   }
 
   save(List<Account> listAccounts, {String accountName = ""}) async {
     // Implementação removida - usar addAccount para adicionar contas individuais
-    _streamController.add("${DateTime.now()} | Método save depreciado.");
+    logger.i("${DateTime.now()} | Método save depreciado.");
   }
 }

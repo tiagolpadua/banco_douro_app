@@ -1,3 +1,5 @@
+import 'package:banco_douro_app/models/account_type.dart';
+import 'package:banco_douro_app/services/account_type_service.dart';
 import 'package:flutter/material.dart';
 import '/models/account.dart';
 import '/services/account_service.dart';
@@ -12,12 +14,37 @@ class AddAccountModal extends StatefulWidget {
 }
 
 class _AddAccountModalState extends State<AddAccountModal> {
-  String _accountType = "AMBROSIA";
+  String? _selectedAccountTypeId;
+  List<AccountType> _accountTypes = [];
+  bool _isLoadingTypes = true;
 
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _lastNameController = TextEditingController();
 
   bool isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadAccountTypes();
+  }
+
+  Future<void> _loadAccountTypes() async {
+    try {
+      final types = await AccountTypeService().getAll();
+      setState(() {
+        _accountTypes = types;
+        if (types.isNotEmpty) {
+          _selectedAccountTypeId = types.first.id;
+        }
+        _isLoadingTypes = false;
+      });
+    } catch (e) {
+      setState(() {
+        _isLoadingTypes = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -60,26 +87,25 @@ class _AddAccountModalState extends State<AddAccountModal> {
             ),
             const SizedBox(height: 16),
             const Text("Tipo da conta"),
-            DropdownButton<String>(
-              value: _accountType,
-              isExpanded: true,
-              items: const [
-                DropdownMenuItem(value: "AMBROSIA", child: Text("Ambrosia")),
-                DropdownMenuItem(value: "CANJICA", child: Text("Canjica")),
-                DropdownMenuItem(value: "PUDIM", child: Text("Pudim")),
-                DropdownMenuItem(
-                  value: "BRIGADEIRO",
-                  child: Text("Brigadeiro"),
-                ),
-              ],
-              onChanged: (valor) {
-                if (valor != null) {
-                  setState(() {
-                    _accountType = valor;
-                  });
-                }
-              },
-            ),
+            _isLoadingTypes
+                ? const Center(child: CircularProgressIndicator())
+                : DropdownButton<String>(
+                    value: _selectedAccountTypeId,
+                    isExpanded: true,
+                    items: _accountTypes.map((type) {
+                      return DropdownMenuItem(
+                        value: type.id,
+                        child: Text(type.description),
+                      );
+                    }).toList(),
+                    onChanged: (valor) {
+                      if (valor != null) {
+                        setState(() {
+                          _selectedAccountTypeId = valor;
+                        });
+                      }
+                    },
+                  ),
             const SizedBox(height: 32),
             Row(
               children: [
@@ -127,13 +153,13 @@ class _AddAccountModalState extends State<AddAccountModal> {
     );
   }
 
-  onButtonCancelClicked() {
+  void onButtonCancelClicked() {
     if (!isLoading) {
       Navigator.pop(context);
     }
   }
 
-  onButtonSendClicked() async {
+  Future<void> onButtonSendClicked() async {
     if (!isLoading) {
       setState(() {
         isLoading = true;
@@ -147,7 +173,7 @@ class _AddAccountModalState extends State<AddAccountModal> {
         name: name,
         lastName: lastName,
         balance: 0,
-        accountType: _accountType,
+        accountType: _selectedAccountTypeId,
       );
 
       await AccountService().addAccount(account);
@@ -156,7 +182,7 @@ class _AddAccountModalState extends State<AddAccountModal> {
     }
   }
 
-  closeModal() {
+  void closeModal() {
     Navigator.pop(context);
   }
 
