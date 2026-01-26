@@ -1,0 +1,685 @@
+================================================================================
+          DESENVOLVIMENTO MOBILE COM FLUTTER - ARQUITETURA EM CAMADAS
+================================================================================
+
+                         Banco Douro App - Estudo de Caso
+
+================================================================================
+1. INTRODUCAO - ARQUITETURA EM CAMADAS
+================================================================================
+
+A arquitetura em camadas (Layered Architecture) e um padrao de organizacao de
+codigo que separa responsabilidades em diferentes niveis. Cada camada tem uma
+funcao especifica e se comunica apenas com as camadas adjacentes.
+
+Estrutura do projeto:
+
+    lib/
+    ├── models/          -> Camada de Dados (Data Layer)
+    ├── services/        -> Camada de Servicos (Service Layer)
+    ├── data/
+    │   ├── database/    -> Camada de Persistencia
+    │   └── repositories/
+    ├── viewmodels/      -> Camada de Apresentacao (ViewModel)
+    └── ui/              -> Camada de Interface (View)
+
+Fluxo de dados:
+    UI (View) <-> ViewModel <-> Service <-> API Remota
+                     |
+                     └-> Repository <-> SQLite Local
+
+
+================================================================================
+2. CAMADA DE MODELOS (Models)
+================================================================================
+
+Os modelos representam as entidades do dominio da aplicacao. Sao classes simples
+que encapsulam dados e fornecem metodos de serializacao.
+
+--------------------------------------------------------------------------------
+EXEMPLO: Account (lib/models/account.dart)
+--------------------------------------------------------------------------------
+
+class Account {
+  String id;
+  String name;
+  String lastName;
+  double balance;
+  String? accountTypeId;    // Referencia para AccountType (chave estrangeira)
+
+  Account({
+    required this.id,
+    required this.name,
+    required this.lastName,
+    required this.balance,
+    this.accountTypeId,
+  });
+
+  // Deserializacao: Map -> Objeto
+  factory Account.fromMap(Map<String, dynamic> map) {
+    return Account(
+      id: map['id'] as String,
+      name: map['name'] as String,
+      lastName: map['lastName'] as String,
+      balance: (map['balance'] is int)
+          ? (map['balance'] as int).toDouble()
+          : map['balance'] as double,
+      accountTypeId: (map['accountTypeId'] != null)
+          ? map['accountTypeId'].toString()
+          : null,
+    );
+  }
+
+  // Serializacao: Objeto -> Map
+  Map<String, dynamic> toMap() {
+    return <String, dynamic>{
+      'id': id,
+      'name': name,
+      'lastName': lastName,
+      'balance': balance,
+      'accountTypeId': accountTypeId,
+    };
+  }
+}
+
+--------------------------------------------------------------------------------
+EXEMPLO: AccountType (lib/models/account_type.dart)
+--------------------------------------------------------------------------------
+
+Entidade de suporte que representa os tipos de conta disponiveis.
+Esta e uma "lookup table" - uma tabela de referencia.
+
+class AccountType {
+  String id;
+  String description;
+
+  AccountType({
+    required this.id,
+    required this.description,
+  });
+
+  factory AccountType.fromMap(Map<String, dynamic> map) {
+    return AccountType(
+      id: map['id'].toString(),
+      description: map['description'] as String,
+    );
+  }
+
+  Map<String, dynamic> toMap() {
+    return <String, dynamic>{
+      'id': id,
+      'description': description,
+    };
+  }
+}
+
+CONCEITO IMPORTANTE - Relacionamento entre Entidades:
+- Account possui accountTypeId que referencia AccountType.id
+- Isso e equivalente a uma "foreign key" em banco de dados relacional
+- Na UI, usamos o ID para buscar a descricao correspondente
+
+
+================================================================================
+3. CAMADA DE SERVICOS (Services)
+================================================================================
+
+Os servicos sao responsaveis pela comunicacao com APIs externas (Web APIs).
+Encapsulam a logica de requisicoes HTTP e tratamento de erros.
+
+--------------------------------------------------------------------------------
+EXEMPLO: AccountService (lib/services/account_service.dart)
+--------------------------------------------------------------------------------
+
+class AccountService {
+  static const String url = "http://10.0.2.2:3000/";
+  static const String resource = "accounts/";
+
+  // Cliente HTTP com interceptador de logging
+  http.Client client = InterceptedClient.build(
+    interceptors: [LoggingInterceptor()],
+  );
+
+  String getURL() {
+    return "$url$resource";
+  }
+
+  Uri getUri() {
+    return Uri.parse(getURL());
+  }
+
+  /// Busca todas as contas - GET /accounts
+  Future<List<Account>> getAll() async {
+    http.Response response = await client.get(getUri());
+
+    if (response.statusCode != 200) {
+      throw Exception("Falha ao buscar contas: ${response.statusCode}");
+    }
+
+    List<Account> result = [];
+    List<dynamic> jsonList = json.decode(response.body);
+    for (var jsonMap in jsonList) {
+      result.add(Account.fromMap(jsonMap));
+    }
+
+    return result;
+  }
+
+  /// Adiciona uma nova conta - POST /accounts
+  Future<bool> addAccount(Account account) async {
+    String accountJSON = json.encode(account.toMap());
+
+    http.Response response = await client.post(
+      getUri(),
+      headers: {'Content-type': 'application/json'},
+      body: accountJSON,
+    );
+
+    return response.statusCode == 201;
+  }
+}
+
+NOTA: O endereco 10.0.2.2 e o "localhost" do emulador Android.
+      No emulador, localhost aponta para o proprio emulador, nao para o host.
+
+
+================================================================================
+4. INTERCEPTADORES HTTP (HTTP Interceptors)
+================================================================================
+
+Interceptadores permitem capturar e processar requisicoes/respostas HTTP
+automaticamente. Sao uteis para logging, autenticacao, cache, etc.
+
+--------------------------------------------------------------------------------
+EXEMPLO: LoggingInterceptor (lib/services/http_interceptors.dart)
+--------------------------------------------------------------------------------
+
+import 'package:http_interceptor/http_interceptor.dart';
+import 'package:logger/logger.dart';
+
+class LoggingInterceptor extends InterceptorContract {
+  Logger logger = Logger(printer: PrettyPrinter(methodCount: 0));
+
+  @override
+  Future<BaseRequest> interceptRequest({required BaseRequest request}) async {
+    // Executa ANTES de cada requisicao
+    logger.t("Requisicao para: ${request.url}\n${request.headers}");
+    return request;
+  }
+
+  @override
+  Future<BaseResponse> interceptResponse({required BaseResponse response}) async {
+    // Executa APOS cada resposta
+    if (response.statusCode ~/ 100 == 2) {
+      logger.i("Resposta de ${response.request?.url}\nStatus: ${response.statusCode}");
+    } else {
+      logger.e("Erro de ${response.request?.url}\nStatus: ${response.statusCode}");
+    }
+    return response;
+  }
+}
+
+USO DO INTERCEPTADOR:
+
+http.Client client = InterceptedClient.build(
+  interceptors: [LoggingInterceptor()],
+);
+
+DEPENDENCIAS NECESSARIAS (pubspec.yaml):
+
+dependencies:
+  http: ^1.6.0
+  http_interceptor: ^2.0.0
+  logger: ^2.0.2
+
+
+================================================================================
+5. CAMADA DE PERSISTENCIA LOCAL (Repository Pattern)
+================================================================================
+
+Repositories abstraem o acesso a dados locais (SQLite). Permitem que a aplicacao
+funcione offline e melhorem a performance com cache local.
+
+--------------------------------------------------------------------------------
+EXEMPLO: DatabaseHelper (lib/data/database/database_helper.dart)
+--------------------------------------------------------------------------------
+
+Singleton que gerencia a conexao com o banco SQLite.
+
+class DatabaseHelper {
+  static final DatabaseHelper instance = DatabaseHelper._init();
+  static Database? _database;
+
+  DatabaseHelper._init();  // Construtor privado (Singleton)
+
+  Future<Database> get database async {
+    if (_database != null) return _database!;
+    _database = await _initDB();
+    return _database!;
+  }
+
+  Future<Database> _initDB() async {
+    final dbPath = await getDatabasesPath();
+    final path = join(dbPath, 'banco_douro.db');
+
+    return await openDatabase(
+      path,
+      version: 2,  // Versao do schema
+      onCreate: _createDB,
+      onUpgrade: _upgradeDB,
+    );
+  }
+
+  Future<void> _createDB(Database db, int version) async {
+    await db.execute('''
+      CREATE TABLE accounts (
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        last_name TEXT NOT NULL,
+        balance REAL DEFAULT 0,
+        account_type_id TEXT
+      )
+    ''');
+  }
+
+  // Migracao de versao do banco
+  Future<void> _upgradeDB(Database db, int oldVersion, int newVersion) async {
+    if (oldVersion < 2) {
+      await db.execute('DROP TABLE IF EXISTS accounts');
+      // Recria tabela com nova estrutura
+      await _createDB(db, newVersion);
+    }
+  }
+}
+
+CONCEITO: MIGRACAO DE BANCO DE DADOS
+
+Quando o schema do banco muda (ex: nova coluna, tipo alterado), incrementamos
+a versao e tratamos a migracao em _upgradeDB. Isso permite atualizar o app
+sem perder compatibilidade com instalacoes existentes.
+
+--------------------------------------------------------------------------------
+EXEMPLO: AccountLocalRepository (lib/data/repositories/account_local_repository.dart)
+--------------------------------------------------------------------------------
+
+class AccountLocalRepository {
+  final DatabaseHelper _dbHelper = DatabaseHelper.instance;
+  final String _tableName = 'accounts';
+
+  Future<int> insert(Account account) async {
+    final db = await _dbHelper.database;
+    return await db.insert(
+      _tableName,
+      _accountToMap(account),
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+  Future<void> insertAll(List<Account> accounts) async {
+    final db = await _dbHelper.database;
+    await db.transaction((txn) async {
+      for (var account in accounts) {
+        await txn.insert(
+          _tableName,
+          _accountToMap(account),
+          conflictAlgorithm: ConflictAlgorithm.replace,
+        );
+      }
+    });
+  }
+
+  Future<List<Account>> getAll() async {
+    final db = await _dbHelper.database;
+    final List<Map<String, dynamic>> maps = await db.query(_tableName);
+    return List.generate(maps.length, (i) => _mapToAccount(maps[i]));
+  }
+
+  // Conversao Model <-> Map do SQLite
+  Map<String, dynamic> _accountToMap(Account account) {
+    return {
+      'id': account.id,
+      'name': account.name,
+      'last_name': account.lastName,
+      'balance': account.balance,
+      'account_type_id': account.accountTypeId,
+    };
+  }
+
+  Account _mapToAccount(Map<String, dynamic> map) {
+    return Account(
+      id: map['id'] as String,
+      name: map['name'] as String,
+      lastName: map['last_name'] as String,
+      balance: (map['balance'] as num).toDouble(),
+      accountTypeId: map['account_type_id'] as String?,
+    );
+  }
+}
+
+NOTA: O repository usa nomes de coluna diferentes do JSON da API
+      (snake_case vs camelCase). Isso e comum em projetos reais.
+
+
+================================================================================
+6. VIEWMODEL - PADRAO DE APRESENTACAO
+================================================================================
+
+O ViewModel e a ponte entre a UI e as camadas de dados. Ele:
+- Gerencia o estado da tela
+- Coordena chamadas a Services e Repositories
+- Expoe dados prontos para a UI consumir
+
+--------------------------------------------------------------------------------
+EXEMPLO: AccountViewModel (lib/viewmodels/account_viewmodel.dart)
+--------------------------------------------------------------------------------
+
+class AccountViewModel {
+  List<Account> _accounts = [];
+  List<AccountType> _accountTypes = [];
+
+  late AccountService _accountService;
+  late AccountTypeService _accountTypeService;
+  late AccountLocalRepository _accountLocalRepository;
+
+  final isOnline = true;
+
+  AccountViewModel() {
+    _accountService = AccountService();
+    _accountTypeService = AccountTypeService();
+    _accountLocalRepository = AccountLocalRepository();
+  }
+
+  Future<void> loadAccounts() async {
+    if (isOnline) {
+      // Online: busca da API e salva localmente
+      _accounts = await _accountService.getAll();
+      await _accountLocalRepository.deleteAll();
+      await _accountLocalRepository.insertAll(_accounts);
+    } else {
+      // Offline: busca do banco local
+      _accounts = await _accountLocalRepository.getAll();
+    }
+  }
+
+  Future<void> loadAccountTypes() async {
+    if (isOnline) {
+      _accountTypes = await _accountTypeService.getAll();
+    }
+  }
+
+  // Getters expoe dados imutaveis para a UI
+  List<Account> get accounts => List.unmodifiable(_accounts);
+  List<AccountType> get accountTypes => List.unmodifiable(_accountTypes);
+}
+
+PRINCIPIO: A UI nunca deve chamar Services diretamente.
+           Sempre passa pelo ViewModel para manter a separacao de camadas.
+
+
+================================================================================
+7. CAMADA DE INTERFACE (UI)
+================================================================================
+
+A UI e composta por Screens (telas) e Widgets (componentes reutilizaveis).
+
+--------------------------------------------------------------------------------
+EXEMPLO: HomeScreen (lib/ui/home_screen.dart)
+--------------------------------------------------------------------------------
+
+class HomeScreen extends StatefulWidget {
+  const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  final AccountViewModel _accountViewModel = AccountViewModel();
+  List<Account> _listAccounts = [];
+
+  @override
+  void initState() {
+    super.initState();
+    refreshGetAll();  // Carrega dados ao iniciar
+  }
+
+  Future<void> refreshGetAll() async {
+    await _accountViewModel.loadAccounts();
+    await _accountViewModel.loadAccountTypes();
+    setState(() {
+      _listAccounts = _accountViewModel.accounts;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: ListView.builder(
+        itemCount: _listAccounts.length,
+        itemBuilder: (context, index) {
+          Account account = _listAccounts[index];
+          return AccountWidget(
+            account: account,
+            accountTypes: _accountViewModel.accountTypes,
+          );
+        },
+      ),
+    );
+  }
+}
+
+CONCEITOS IMPORTANTES:
+
+1. StatefulWidget: Widget que mantem estado mutavel
+2. initState(): Chamado uma vez quando o widget e criado
+3. setState(): Notifica o Flutter para reconstruir a UI
+4. ListView.builder: Constroi itens sob demanda (eficiente para listas grandes)
+
+--------------------------------------------------------------------------------
+EXEMPLO: AccountWidget (lib/ui/widgets/account_widget.dart)
+--------------------------------------------------------------------------------
+
+Widget reutilizavel que exibe um card de conta.
+
+class AccountWidget extends StatelessWidget {
+  final Account account;
+  final List<AccountType> accountTypes;
+
+  const AccountWidget({
+    super.key,
+    required this.account,
+    required this.accountTypes,
+  });
+
+  // Metodo helper para buscar descricao do tipo
+  String _getAccountTypeDescription() {
+    if (account.accountTypeId == null) return "Sem tipo definido";
+    final type = accountTypes
+        .where((t) => t.id == account.accountTypeId)
+        .firstOrNull;
+    return type?.description ?? "Tipo desconhecido";
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        children: [
+          Text("${account.name} ${account.lastName}"),
+          Text("Saldo: ${account.balance.toStringAsFixed(2)}"),
+          Text("Tipo: ${_getAccountTypeDescription()}"),
+        ],
+      ),
+    );
+  }
+}
+
+CONCEITO: LOOKUP DE DADOS RELACIONADOS
+
+Em vez de armazenar a descricao do tipo em cada conta (duplicacao),
+armazenamos apenas o ID (accountTypeId) e buscamos a descricao na
+lista de tipos quando precisamos exibir.
+
+Vantagens:
+- Evita duplicacao de dados
+- Facilita atualizacao (mudar descricao em um lugar)
+- Segue principios de normalizacao de dados
+
+
+================================================================================
+8. FORMULARIOS E ESTADO LOCAL
+================================================================================
+
+--------------------------------------------------------------------------------
+EXEMPLO: AddAccountModal (lib/ui/widgets/add_account_modal.dart)
+--------------------------------------------------------------------------------
+
+class _AddAccountModalState extends State<AddAccountModal> {
+  String? _selectedAccountTypeId;
+  List<AccountType> _accountTypes = [];
+  bool _isLoadingTypes = true;
+
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _lastNameController = TextEditingController();
+  bool isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadAccountTypes();
+  }
+
+  Future<void> _loadAccountTypes() async {
+    try {
+      final types = await AccountTypeService().getAll();
+      setState(() {
+        _accountTypes = types;
+        if (types.isNotEmpty) {
+          _selectedAccountTypeId = types.first.id;
+        }
+        _isLoadingTypes = false;
+      });
+    } catch (e) {
+      setState(() {
+        _isLoadingTypes = false;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        TextField(controller: _nameController),
+        TextField(controller: _lastNameController),
+
+        // Dropdown dinamico carregado da API
+        _isLoadingTypes
+            ? const CircularProgressIndicator()
+            : DropdownButton<String>(
+                value: _selectedAccountTypeId,
+                items: _accountTypes.map((type) {
+                  return DropdownMenuItem(
+                    value: type.id,
+                    child: Text(type.description),
+                  );
+                }).toList(),
+                onChanged: (valor) {
+                  setState(() {
+                    _selectedAccountTypeId = valor;
+                  });
+                },
+              ),
+      ],
+    );
+  }
+
+  Future<void> onButtonSendClicked() async {
+    final account = Account(
+      id: const Uuid().v4(),
+      name: _nameController.text,
+      lastName: _lastNameController.text,
+      balance: 0,
+      accountTypeId: _selectedAccountTypeId,
+    );
+
+    await AccountService().addAccount(account);
+    Navigator.pop(context);
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _lastNameController.dispose();
+    super.dispose();
+  }
+}
+
+CONCEITOS IMPORTANTES:
+
+1. TextEditingController: Controla o texto de um TextField
+2. dispose(): SEMPRE libere controllers para evitar memory leaks
+3. Loading state: Mostre feedback visual durante operacoes assincronas
+4. DropdownButton dinamico: Items carregados da API, nao hardcoded
+
+
+================================================================================
+9. RESUMO - FLUXO COMPLETO DE DADOS
+================================================================================
+
+LEITURA DE DADOS (GET):
+
+    1. UI (HomeScreen) chama ViewModel.loadAccounts()
+    2. ViewModel chama Service.getAll()
+    3. Service faz HTTP GET para a API
+    4. Interceptor loga a requisicao
+    5. Service converte JSON -> List<Account>
+    6. ViewModel salva no Repository local (cache)
+    7. ViewModel expoe dados via getter
+    8. UI chama setState() e reconstroi com novos dados
+
+ESCRITA DE DADOS (POST):
+
+    1. UI coleta dados do formulario
+    2. UI cria objeto Account
+    3. UI chama Service.addAccount(account)
+    4. Service converte Account -> JSON
+    5. Service faz HTTP POST para a API
+    6. Interceptor loga a requisicao
+    7. UI fecha modal e atualiza lista
+
+
+================================================================================
+10. BOAS PRATICAS DEMONSTRADAS
+================================================================================
+
+1. SEPARACAO DE RESPONSABILIDADES
+   - Models: apenas dados
+   - Services: apenas comunicacao HTTP
+   - Repositories: apenas persistencia local
+   - ViewModels: apenas coordenacao
+   - UI: apenas apresentacao
+
+2. PRINCIPIO DRY (Don't Repeat Yourself)
+   - LoggingInterceptor reutilizado em todos os Services
+   - AccountWidget reutilizado para cada conta na lista
+
+3. TRATAMENTO DE ERROS
+   - Services verificam statusCode antes de processar resposta
+   - try/catch em operacoes que podem falhar
+
+4. FEEDBACK AO USUARIO
+   - Loading indicators durante operacoes assincronas
+   - Mensagens claras de erro
+
+5. IMUTABILIDADE
+   - Getters retornam List.unmodifiable() para proteger estado interno
+
+6. GERENCIAMENTO DE RECURSOS
+   - dispose() libera TextEditingControllers
+   - Singleton para DatabaseHelper evita multiplas conexoes
+
+
+================================================================================
+                              FIM DO DOCUMENTO
+================================================================================
