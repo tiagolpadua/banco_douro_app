@@ -20,7 +20,7 @@ class LoggingInterceptor extends InterceptorContract {
   }) async {
     // Codigos 2xx indicam sucesso
     if (response.statusCode ~/ 100 == 2) {
-      logger.i(
+      logger.d(
         "Resposta de ${response.request?.url}\n"
         "Status: ${response.statusCode}",
       );
