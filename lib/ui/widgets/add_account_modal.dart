@@ -1,10 +1,10 @@
 import 'package:banco_douro_app/models/account_type.dart';
 import 'package:banco_douro_app/services/account_type_service.dart';
+import 'package:banco_douro_app/utils/id_generator.dart';
 import 'package:flutter/material.dart';
 import '/models/account.dart';
 import '/services/account_service.dart';
 import '/ui/styles/colors.dart';
-import 'package:uuid/uuid.dart';
 
 class AddAccountModal extends StatefulWidget {
   const AddAccountModal({super.key});
@@ -169,7 +169,7 @@ class _AddAccountModalState extends State<AddAccountModal> {
       String lastName = _lastNameController.text;
 
       Account account = Account(
-        id: const Uuid().v1(),
+        id: IdGenerator.generate(),
         name: name,
         lastName: lastName,
         balance: 0,
@@ -187,7 +187,7 @@ class _AddAccountModalState extends State<AddAccountModal> {
   }
 
   @override
-  dispose() {
+  void dispose() {
     _nameController.dispose();
     _lastNameController.dispose();
     super.dispose();

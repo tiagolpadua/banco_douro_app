@@ -1,9 +1,10 @@
+import 'package:logger/logger.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
-import 'package:sqflite/sqlite_api.dart';
 
 class DatabaseHelper {
   static final DatabaseHelper instance = DatabaseHelper._init();
+  static final Logger _logger = Logger(printer: PrettyPrinter(methodCount: 0));
 
   static Database? _database;
 
@@ -25,7 +26,7 @@ class DatabaseHelper {
 
     return await openDatabase(
       path,
-      version: 1,
+      version: 2,
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
       onOpen: _onOpen,
@@ -33,7 +34,7 @@ class DatabaseHelper {
   }
 
   Future<void> _onOpen(Database db) async {
-    print("Database opened: ${db.path}");
+    _logger.i("Database opened: ${db.path}");
   }
 
   Future<void> _createDB(Database db, int version) async {
@@ -44,6 +45,17 @@ class DatabaseHelper {
         last_name TEXT NOT NULL,
         balance REAL DEFAULT 0,
         account_type TEXT NOT NULL
+      )
+    ''');
+
+    await db.execute('''
+      CREATE TABLE transactions (
+        id TEXT PRIMARY KEY,
+        sender_account_id TEXT NOT NULL,
+        receiver_account_id TEXT NOT NULL,
+        date INTEGER NOT NULL,
+        amount REAL NOT NULL,
+        taxes REAL NOT NULL
       )
     ''');
   }
@@ -60,11 +72,19 @@ class DatabaseHelper {
   /// }
   /// ```
   Future<void> _upgradeDB(Database db, int oldVersion, int newVersion) async {
-    print('📦 Migrando banco da versão $oldVersion para $newVersion');
+    _logger.i('Migrando banco da versao $oldVersion para $newVersion');
 
-    // Adicione migrações aqui conforme necessário
-    // if (oldVersion < 2) {
-    //   await db.execute('ALTER TABLE accounts ADD COLUMN phone TEXT');
-    // }
+    if (oldVersion < 2) {
+      await db.execute('''
+        CREATE TABLE transactions (
+          id TEXT PRIMARY KEY,
+          sender_account_id TEXT NOT NULL,
+          receiver_account_id TEXT NOT NULL,
+          date INTEGER NOT NULL,
+          amount REAL NOT NULL,
+          taxes REAL NOT NULL
+        )
+      ''');
+    }
   }
 }

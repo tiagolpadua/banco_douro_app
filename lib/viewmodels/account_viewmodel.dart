@@ -7,23 +7,25 @@ import 'package:banco_douro_app/services/account_type_service.dart';
 class AccountViewModel {
   List<Account> _accounts = [];
   List<AccountType> _accountTypes = [];
-  late AccountService _accountService;
-  late AccountLocalRepository _accountLocalRepository;
-  late AccountTypeService _accountTypeService;
-  final isOnline = true;
 
-  AccountViewModel() {
-    _accountService = AccountService();
-    _accountTypeService = AccountTypeService();
-    _accountLocalRepository = AccountLocalRepository();
-  }
+  final AccountService _accountService;
+  final AccountLocalRepository _accountLocalRepository;
+  final AccountTypeService _accountTypeService;
+
+  AccountViewModel({
+    AccountService? accountService,
+    AccountLocalRepository? accountLocalRepository,
+    AccountTypeService? accountTypeService,
+  })  : _accountService = accountService ?? AccountService(),
+        _accountLocalRepository = accountLocalRepository ?? AccountLocalRepository(),
+        _accountTypeService = accountTypeService ?? AccountTypeService();
 
   Future<void> loadAccounts() async {
-    if (isOnline) {
+    try {
       _accounts = await _accountService.getAll();
       await _accountLocalRepository.deleteAll();
       await _accountLocalRepository.insertAll(_accounts);
-    } else {
+    } catch (e) {
       _accounts = await _accountLocalRepository.getAll();
     }
   }
@@ -33,8 +35,6 @@ class AccountViewModel {
   List<AccountType> get accountTypes => List.unmodifiable(_accountTypes);
 
   Future<void> loadAccountTypes() async {
-    if (isOnline) {
-      _accountTypes = await _accountTypeService.getAll();
-    }
+    _accountTypes = await _accountTypeService.getAll();
   }
 }

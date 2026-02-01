@@ -52,7 +52,7 @@ class AccountWidget extends StatelessWidget {
               Text("Tipo: ${_getAccountTypeDescription()}"),
             ],
           ),
-          IconButton(onPressed: () {}, icon: const Icon(Icons.settings)),
+          const Icon(Icons.account_balance_wallet, size: 32),
         ],
       ),
     );

@@ -1,26 +1,28 @@
 import 'package:banco_douro_app/data/database/database_helper.dart';
 import 'package:banco_douro_app/models/account.dart';
+import 'package:logger/logger.dart';
 import 'package:sqflite/sqflite.dart';
 
 class AccountLocalRepository {
   final DatabaseHelper _dbHelper = DatabaseHelper.instance;
+  final Logger _logger = Logger(printer: PrettyPrinter(methodCount: 0));
 
   static const String _tableName = 'accounts';
 
   Future<int> insert(Account account) async {
     final db = await _dbHelper.database;
-    print("Inserting account locally: ${account.toJson()}");
+    _logger.d("Inserting account locally: ${account.toJson()}");
     final result = await db.insert(
       _tableName,
       _accountToMap(account),
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
-    print("Inserted account with id: ${account.id}");
+    _logger.d("Inserted account with id: ${account.id}");
     return result;
   }
 
   Future<void> insertAll(List<Account> accounts) async {
-    print("Inserting ${accounts.length} accounts locally...");
+    _logger.d("Inserting ${accounts.length} accounts locally...");
     final db = await _dbHelper.database;
 
     await db.transaction((txn) async {
@@ -37,25 +39,11 @@ class AccountLocalRepository {
   }
 
   Future<List<Account>> getAll() async {
-    print("Fetching all accounts from local database...");
+    _logger.d("Fetching all accounts from local database...");
     final db = await _dbHelper.database;
 
     final List<Map<String, dynamic>> maps = await db.query(
       _tableName,
-      orderBy: 'name ASC',
-    );
-
-    return maps.map((map) => _accountFromMap(map)).toList();
-  }
-
-  /// Busca contas por nome (busca parcial, case-insensitive).
-  Future<List<Account>> searchByName(String query) async {
-    final db = await _dbHelper.database;
-
-    final List<Map<String, dynamic>> maps = await db.query(
-      _tableName,
-      where: 'name LIKE ? OR last_name LIKE ?',
-      whereArgs: ['%$query%', '%$query%'],
       orderBy: 'name ASC',
     );
 
@@ -78,7 +66,7 @@ class AccountLocalRepository {
       'name': account.name,
       'last_name': account.lastName,
       'balance': account.balance,
-      'account_type': 'x',
+      'account_type': account.accountType ?? '',
     };
   }
 

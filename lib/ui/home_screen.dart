@@ -16,7 +16,9 @@ class _HomeScreenState extends State<HomeScreen> {
   final AccountViewModel _accountViewModel = AccountViewModel();
   List<Account> _listAccounts = [];
 
-  _HomeScreenState() {
+  @override
+  void initState() {
+    super.initState();
     refreshGetAll();
   }
 
@@ -30,7 +32,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    print("Rebuild HomeScreen...");
     return Scaffold(
       appBar: AppBar(
         backgroundColor: AppColor.lightGrey,

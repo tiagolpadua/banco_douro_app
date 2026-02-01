@@ -72,11 +72,16 @@ class Account {
     return other.id == id &&
         other.name == name &&
         other.lastName == lastName &&
-        other.balance == balance;
+        other.balance == balance &&
+        other.accountType == accountType;
   }
 
   @override
   int get hashCode {
-    return id.hashCode ^ name.hashCode ^ lastName.hashCode ^ balance.hashCode;
+    return id.hashCode ^
+        name.hashCode ^
+        lastName.hashCode ^
+        balance.hashCode ^
+        accountType.hashCode;
   }
 }
