@@ -1,9 +1,11 @@
-import 'package:banco_douro_app/viewmodels/account_viewmodel.dart';
 import 'package:flutter/material.dart';
-import '/models/account.dart';
-import '/ui/widgets/account_widget.dart';
-import '/ui/widgets/add_account_modal.dart';
+import '../models/account.dart';
+import '../services/auth_service.dart';
+import '../viewmodels/account_viewmodel.dart';
 import 'styles/colors.dart';
+import 'widgets/account_widget.dart';
+import 'widgets/add_account_modal.dart';
+import 'widgets/confirmation_dialog.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -14,6 +16,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final AccountViewModel _accountViewModel = AccountViewModel();
+  final AuthService _authService = AuthService();
   List<Account> _listAccounts = [];
 
   @override
@@ -30,6 +33,22 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
+  Future<void> _onLogoutPressed() async {
+    final confirmed = await showConfirmationDialog(
+      context,
+      title: 'Sair',
+      content: 'Deseja realmente sair do sistema?',
+      confirmText: 'Sair',
+    );
+
+    if (confirmed == true) {
+      await _authService.logout();
+      if (mounted) {
+        Navigator.pushReplacementNamed(context, 'login');
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -38,10 +57,9 @@ class _HomeScreenState extends State<HomeScreen> {
         title: const Text("Sistema de gestão de contas"),
         actions: [
           IconButton(
-            onPressed: () {
-              Navigator.pushReplacementNamed(context, "login");
-            },
+            onPressed: _onLogoutPressed,
             icon: const Icon(Icons.logout),
+            tooltip: 'Sair',
           ),
         ],
       ),
@@ -65,15 +83,20 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Column(
             children: [
               Expanded(
-                child: ListView.builder(
-                  itemCount: _listAccounts.length,
-                  itemBuilder: (context, index) {
-                    Account account = _listAccounts[index];
-                    return AccountWidget(
-                      account: account,
-                      accountTypes: _accountViewModel.accountTypes,
-                    );
-                  },
+                child: RefreshIndicator(
+                  onRefresh: refreshGetAll,
+                  child: ListView.builder(
+                    itemCount: _listAccounts.length,
+                    itemBuilder: (context, index) {
+                      Account account = _listAccounts[index];
+                      return AccountWidget(
+                        account: account,
+                        accountTypes: _accountViewModel.accountTypes,
+                        onUpdate: refreshGetAll,
+                        onDelete: refreshGetAll,
+                      );
+                    },
+                  ),
                 ),
               ),
             ],

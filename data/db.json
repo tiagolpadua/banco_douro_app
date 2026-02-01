@@ -1,8 +1,15 @@
 {
+  "users": [
+    {
+      "email": "admin@admin.com",
+      "password": "$2a$10$pATcArQtLAjYUXQhY381Eea3ZhS4/ZsU6.TBKrr9d.SiZo99qa4Ny",
+      "id": 1
+    }
+  ],
   "accounts": [
     {
       "id": "ID001",
-      "name": "Ricarth",
+      "name": "Ricarthdd",
       "lastName": "Lima",
       "balance": 113,
       "accountType": "1"
@@ -19,27 +26,6 @@
       "name": "Bruno",
       "lastName": "Santos",
       "balance": 75,
-      "accountType": "2"
-    },
-    {
-      "id": "ID005",
-      "name": "Paulo",
-      "lastName": "José",
-      "balance": 250,
-      "accountType": null
-    },
-    {
-      "id": "fa1e1130-fb08-11f0-b378-5dbfce7930e8",
-      "name": "Pedro",
-      "lastName": "Paulo",
-      "balance": 0,
-      "accountType": "2"
-    },
-    {
-      "id": "33b6c9a0-fb09-11f0-9512-f9ff97e4fb07",
-      "name": "tiago",
-      "lastName": "lage",
-      "balance": 0,
       "accountType": "2"
     }
   ],

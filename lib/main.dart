@@ -1,13 +1,21 @@
 import 'package:flutter/material.dart';
+import 'services/auth_service.dart';
 import 'ui/home_screen.dart';
 import 'ui/login_screen.dart';
 
-void main() {
-  runApp(const BancoDouroApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  final authService = AuthService();
+  final isLoggedIn = await authService.isLoggedIn();
+
+  runApp(BancoDouroApp(isLoggedIn: isLoggedIn));
 }
 
 class BancoDouroApp extends StatelessWidget {
-  const BancoDouroApp({super.key});
+  final bool isLoggedIn;
+
+  const BancoDouroApp({super.key, required this.isLoggedIn});
 
   @override
   Widget build(BuildContext context) {
@@ -16,7 +24,7 @@ class BancoDouroApp extends StatelessWidget {
         "login": (context) => const LoginScreen(),
         "home": (context) => const HomeScreen(),
       },
-      initialRoute: "login",
+      initialRoute: isLoggedIn ? "home" : "login",
     );
   }
 }

@@ -1,0 +1,17 @@
+{
+  "name": "banco-douro-api",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "start": "json-server-auth db.json --routes routes.json --port 3000 --host 0.0.0.0",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "Tiago Lage Payne de Pádua",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "json-server": "^0.17.4",
+    "json-server-auth": "^2.1.0"
+  }
+}
