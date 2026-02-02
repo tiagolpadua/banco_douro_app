@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:http_interceptor/http_interceptor.dart';
 import 'package:logger/logger.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../config/api_config.dart';
 import '../models/account.dart';
@@ -18,10 +19,22 @@ class AccountService {
 
   String get _url => ApiConfig.accountsUrl;
 
+  Future<Map<String, String>> _getHeaders() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('accessToken') ?? '';
+    return {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer $token',
+    };
+  }
+
   Future<List<Account>> getAll() async {
     _logger.i("Fetching all accounts from remote server...");
 
-    Response response = await _client.get(Uri.parse(_url));
+    final headers = await _getHeaders();
+
+    Response response = await _client.get(Uri.parse(_url), headers: headers);
+
     _logger.i("${DateTime.now()} | Requisicao de leitura.");
 
     if (response.statusCode != 200) {
@@ -45,9 +58,10 @@ class AccountService {
     _logger.i("Adding new account to remote server: ${account.toString()}");
     String accountJSON = json.encode(account.toMap());
 
+    final headers = await _getHeaders();
     Response response = await _client.post(
       Uri.parse(_url),
-      headers: {"Content-Type": "application/json"},
+      headers: headers,
       body: accountJSON,
     );
 
@@ -62,10 +76,27 @@ class AccountService {
     _logger.i("Updating account on remote server: ${account.id}");
     String accountJSON = json.encode(account.toMap());
 
+    final headers = await _getHeaders();
     Response response = await _client.put(
       Uri.parse('$_url/${account.id}'),
-      headers: {"Content-Type": "application/json"},
+      headers: headers,
       body: accountJSON,
+    );
+
+    if (response.statusCode == 200) {
+      return true;
+    }
+
+    return false;
+  }
+
+  Future<bool> deleteAccount(String id) async {
+    _logger.i("Deleting account from remote server: $id");
+
+    final headers = await _getHeaders();
+    Response response = await _client.delete(
+      Uri.parse('$_url/$id'),
+      headers: headers,
     );
 
     if (response.statusCode == 200) {

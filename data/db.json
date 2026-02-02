@@ -1,26 +1,12 @@
 {
+  "users": [
+    {
+      "email": "admin@admin.com",
+      "password": "$2a$10$inryfVjnzTWMeqZpNaq5wOEOsVtyD6T0L3MU97emRJrhaxKY8tAgW",
+      "id": 1
+    }
+  ],
   "accounts": [
-    {
-      "id": "ID001",
-      "name": "Ricarth",
-      "lastName": "Lima",
-      "balance": 113,
-      "accountType": "1"
-    },
-    {
-      "id": "ID002",
-      "name": "Ana",
-      "lastName": "Silva",
-      "balance": 250,
-      "accountType": "1"
-    },
-    {
-      "id": "ID003",
-      "name": "Bruno",
-      "lastName": "Santos",
-      "balance": 75,
-      "accountType": "2"
-    },
     {
       "id": "ID005",
       "name": "Paulo",

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import '/ui/styles/colors.dart';
+import '../services/auth_service.dart';
+import 'styles/colors.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -12,6 +13,8 @@ class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _authService = AuthService();
+  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -20,8 +23,51 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
-  void _onLoginPressed() {
-    Navigator.pushReplacementNamed(context, "home");
+  String? _validateEmail(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Informe o e-mail';
+    }
+    if (!value.contains('@')) {
+      return 'E-mail inválido';
+    }
+    return null;
+  }
+
+  String? _validatePassword(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Informe a senha';
+    }
+    if (value.length < 4) {
+      return 'Senha deve ter pelo menos 4 caracteres';
+    }
+    return null;
+  }
+
+  Future<void> _onLoginPressed() async {
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    final email = _emailController.text;
+    final password = _passwordController.text;
+
+    try {
+      await _authService.login(email, password);
+      if (mounted) {
+        Navigator.pushReplacementNamed(context, 'home');
+      }
+    } catch (e) {
+      print(
+        'Erro ao conectar com o servidor. Verifique sua conexão: ${e.toString()}',
+      );
+      rethrow;
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
   }
 
   @override
@@ -58,6 +104,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           TextFormField(
                             controller: _emailController,
                             keyboardType: TextInputType.emailAddress,
+                            validator: _validateEmail,
                             decoration: const InputDecoration(
                               label: Text("E-mail"),
                             ),
@@ -66,22 +113,32 @@ class _LoginScreenState extends State<LoginScreen> {
                           TextFormField(
                             controller: _passwordController,
                             obscureText: true,
+                            validator: _validatePassword,
                             decoration: const InputDecoration(
                               label: Text("Senha"),
                             ),
                           ),
                           const SizedBox(height: 32),
                           ElevatedButton(
-                            onPressed: _onLoginPressed,
+                            onPressed: _isLoading ? null : _onLoginPressed,
                             style: const ButtonStyle(
                               backgroundColor: WidgetStatePropertyAll(
                                 AppColor.orange,
                               ),
                             ),
-                            child: const Text(
-                              "Entrar",
-                              style: TextStyle(color: Colors.black),
-                            ),
+                            child: _isLoading
+                                ? const SizedBox(
+                                    height: 20,
+                                    width: 20,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: Colors.black,
+                                    ),
+                                  )
+                                : const Text(
+                                    "Entrar",
+                                    style: TextStyle(color: Colors.black),
+                                  ),
                           ),
                         ],
                       ),
@@ -95,4 +152,36 @@ class _LoginScreenState extends State<LoginScreen> {
       ),
     );
   }
+}
+
+Future<bool?> showConfirmationDialog(
+  BuildContext context, {
+  String title = 'Atenção!',
+  String content = 'Deseja realizar esta operação?',
+  String confirmText = 'Confirmar',
+  String cancelText = 'Cancelar',
+}) {
+  return showDialog<bool>(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: Text(title),
+      content: Text(content),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context, false),
+          child: Text(cancelText),
+        ),
+        TextButton(
+          onPressed: () => Navigator.pop(context, true),
+          child: Text(
+            confirmText,
+            style: const TextStyle(
+              color: Colors.red,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+      ],
+    ),
+  );
 }

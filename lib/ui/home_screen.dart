@@ -1,3 +1,4 @@
+import 'package:banco_douro_app/services/auth_service.dart';
 import 'package:banco_douro_app/viewmodels/account_viewmodel.dart';
 import 'package:flutter/material.dart';
 import '/models/account.dart';
@@ -15,6 +16,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   final AccountViewModel _accountViewModel = AccountViewModel();
   List<Account> _listAccounts = [];
+  final AuthService _authService = AuthService();
 
   @override
   void initState() {
@@ -30,6 +32,13 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
+  Future<void> _onLogoutPressed() async {
+    await _authService.logout();
+    if (mounted) {
+      Navigator.pushReplacementNamed(context, 'login');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -38,9 +47,7 @@ class _HomeScreenState extends State<HomeScreen> {
         title: const Text("Sistema de gestão de contas"),
         actions: [
           IconButton(
-            onPressed: () {
-              Navigator.pushReplacementNamed(context, "login");
-            },
+            onPressed: _onLogoutPressed,
             icon: const Icon(Icons.logout),
           ),
         ],
@@ -72,6 +79,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     return AccountWidget(
                       account: account,
                       accountTypes: _accountViewModel.accountTypes,
+                      onUpdate: refreshGetAll,
+                      onDelete: refreshGetAll,
                     );
                   },
                 ),
