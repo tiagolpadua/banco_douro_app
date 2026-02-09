@@ -2,9 +2,9 @@ import 'package:banco_douro_app/models/account_type.dart';
 import 'package:banco_douro_app/services/account_type_service.dart';
 import 'package:banco_douro_app/utils/id_generator.dart';
 import 'package:flutter/material.dart';
-import '/models/account.dart';
-import '/services/account_service.dart';
-import '/ui/styles/colors.dart';
+import '../../models/account.dart';
+import '../../services/account_service.dart';
+import '../theme/app_colors.dart';
 
 class AddAccountModal extends StatefulWidget {
   const AddAccountModal({super.key});
@@ -48,106 +48,193 @@ class _AddAccountModalState extends State<AddAccountModal> {
 
   @override
   Widget build(BuildContext context) {
+    final bottomInset = MediaQuery.of(context).viewInsets.bottom;
     return Container(
       height: MediaQuery.of(context).size.height * 0.75,
       padding: EdgeInsets.only(
         left: 32,
         right: 32,
-        top: 32,
-        bottom: MediaQuery.of(context).viewInsets.bottom,
+        top: 12,
+        bottom: bottomInset + 16,
       ),
-      child: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            const SizedBox(height: 16),
-            Center(
-              child: Image.asset(
-                "assets/images/icon_add_account.png",
-                width: 64,
+      child: SafeArea(
+        top: false,
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Handle bar do modal
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[300],
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
               ),
-            ),
-            const SizedBox(height: 32),
-            const Text(
-              "Adicionar nova conta",
-              style: TextStyle(fontWeight: FontWeight.w400, fontSize: 24),
-            ),
-            const SizedBox(height: 16),
-            const Text(
-              "Preencha os dados abaixo:",
-              style: TextStyle(fontWeight: FontWeight.w400, fontSize: 14),
-            ),
-            TextFormField(
-              controller: _nameController,
-              decoration: const InputDecoration(label: Text("Nome")),
-            ),
-            TextFormField(
-              controller: _lastNameController,
-              decoration: const InputDecoration(label: Text("Último nome")),
-            ),
-            const SizedBox(height: 16),
-            const Text("Tipo da conta"),
-            _isLoadingTypes
-                ? const Center(child: CircularProgressIndicator())
-                : DropdownButton<String>(
-                    value: _selectedAccountTypeId,
-                    isExpanded: true,
-                    items: _accountTypes.map((type) {
-                      return DropdownMenuItem(
-                        value: type.id,
-                        child: Text(type.description),
-                      );
-                    }).toList(),
-                    onChanged: (valor) {
-                      if (valor != null) {
-                        setState(() {
-                          _selectedAccountTypeId = valor;
-                        });
-                      }
-                    },
+              const SizedBox(height: 24),
+
+              // Icone com BoxDecoration
+              Center(
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: AppColors.accent.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(16),
                   ),
-            const SizedBox(height: 32),
-            Row(
-              children: [
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: (isLoading)
-                        ? null
-                        : () {
-                            onButtonCancelClicked();
-                          },
-                    child: const Text(
-                      "Cancelar",
-                      style: TextStyle(color: Colors.black),
-                    ),
+                  child: Image.asset(
+                    "assets/images/icon_add_account.png",
+                    width: 40,
                   ),
                 ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: () {
-                      onButtonSendClicked();
-                    },
-                    style: const ButtonStyle(
-                      backgroundColor: WidgetStatePropertyAll(AppColor.orange),
+              ),
+              const SizedBox(height: 24),
+
+              // Titulo estilizado
+              const Text(
+                "Adicionar nova conta",
+                style: TextStyle(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 22,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                "Preencha os dados abaixo para criar uma nova conta bancaria.",
+                style: TextStyle(
+                  fontWeight: FontWeight.w400,
+                  fontSize: 14,
+                  color: AppColors.textSecondary,
+                ),
+              ),
+              const SizedBox(height: 24),
+
+              // Campo Nome
+              TextFormField(
+                controller: _nameController,
+                decoration: const InputDecoration(
+                  labelText: "Nome",
+                  prefixIcon: Icon(
+                    Icons.person_outline,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              // Campo Sobrenome
+              TextFormField(
+                controller: _lastNameController,
+                decoration: const InputDecoration(
+                  labelText: "Sobrenome",
+                  prefixIcon: Icon(
+                    Icons.person_outline,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+
+              // Tipo da conta
+              const Text(
+                "Tipo da conta",
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+              const SizedBox(height: 8),
+              _isLoadingTypes
+                  ? const Center(
+                      child: Padding(
+                        padding: EdgeInsets.all(16),
+                        child: CircularProgressIndicator(),
+                      ),
+                    )
+                  : Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.grey.shade300),
+                      ),
+                      child: DropdownButton<String>(
+                        value: _selectedAccountTypeId,
+                        isExpanded: true,
+                        underline: const SizedBox(),
+                        borderRadius: BorderRadius.circular(12),
+                        items: _accountTypes.map((type) {
+                          return DropdownMenuItem(
+                            value: type.id,
+                            child: Text(type.description),
+                          );
+                        }).toList(),
+                        onChanged: (valor) {
+                          if (valor != null) {
+                            setState(() {
+                              _selectedAccountTypeId = valor;
+                            });
+                          }
+                        },
+                      ),
                     ),
-                    child: (isLoading)
-                        ? const SizedBox(
-                            width: 16,
-                            height: 16,
-                            child: CircularProgressIndicator(
-                              color: Colors.white,
+              const SizedBox(height: 32),
+
+              // Botoes
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: isLoading ? null : onButtonCancelClicked,
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        side: BorderSide(color: Colors.grey.shade300),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: const Text(
+                        "Cancelar",
+                        style: TextStyle(color: AppColors.textSecondary),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: isLoading ? null : onButtonSendClicked,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: isLoading
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 2,
+                              ),
+                            )
+                          : const Text(
+                              "Adicionar",
+                              style: TextStyle(fontWeight: FontWeight.w600),
                             ),
-                          )
-                        : const Text(
-                            "Adicionar",
-                            style: TextStyle(color: Colors.black),
-                          ),
+                    ),
                   ),
-                ),
-              ],
-            ),
-          ],
+                ],
+              ),
+              const SizedBox(height: 16),
+            ],
+          ),
         ),
       ),
     );

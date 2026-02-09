@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../config/api_config.dart';
@@ -51,7 +52,7 @@ class AuthService {
   }
 
   Future<bool> isLoggedIn() async {
-    print('>>>> Checking login status...');
+    debugPrint('>>>> Checking login status...');
     final token = await getToken();
     return token != null && token.isNotEmpty;
   }
