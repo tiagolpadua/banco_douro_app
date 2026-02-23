@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import '../../models/account.dart';
 import '../../models/account_type.dart';
 import '../../services/account_service.dart';
-import '../styles/colors.dart';
+import '../theme/app_colors.dart';
 
 class AccountWidget extends StatelessWidget {
   final Account account;
@@ -53,44 +53,90 @@ class AccountWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(16),
-      margin: const EdgeInsets.only(bottom: 8),
+      margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: AppColor.lightOrange,
-        borderRadius: BorderRadius.circular(12),
+        color: AppColors.cardBackground,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.06),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
+          // Avatar com iniciais
+          Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [AppColors.primary, AppColors.primaryLight],
+              ),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Center(
+              child: Text(
+                "${account.name[0]}${account.lastName.isNotEmpty ? account.lastName[0] : ''}",
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 14),
+
+          // Informações da conta
           Expanded(
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   "${account.name} ${account.lastName}",
                   style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textPrimary,
                   ),
                 ),
+                const SizedBox(height: 4),
                 Text(
-                  "ID: ${account.id.substring(0, min(account.id.length, 5))}",
+                  "ID: ${account.id.substring(0, min(account.id.length, 5))}  •  ${_getAccountTypeDescription()}",
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: AppColors.textSecondary,
+                  ),
                 ),
-                Text("Saldo: ${account.balance.toStringAsFixed(2)}"),
-                Text("Tipo: ${_getAccountTypeDescription()}"),
+                const SizedBox(height: 6),
+                Text(
+                  "R\$ ${account.balance.toStringAsFixed(2)}",
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.primary,
+                  ),
+                ),
               ],
             ),
           ),
+
+          // Botões de ação
           Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               IconButton(
-                icon: const Icon(Icons.edit, color: AppColor.orange),
+                icon: const Icon(Icons.edit_outlined, color: AppColors.accent, size: 22),
                 onPressed: () => _onEditPressed(context),
                 tooltip: 'Editar',
               ),
               IconButton(
-                icon: const Icon(Icons.delete, color: Colors.red),
+                icon: const Icon(Icons.delete_outline, color: AppColors.negative, size: 22),
                 onPressed: () => _onDeletePressed(context),
                 tooltip: 'Excluir',
               ),

@@ -8,13 +8,6 @@
   ],
   "accounts": [
     {
-      "id": "ID005",
-      "name": "Paulo",
-      "lastName": "José",
-      "balance": 250,
-      "accountType": null
-    },
-    {
       "id": "fa1e1130-fb08-11f0-b378-5dbfce7930e8",
       "name": "Pedro",
       "lastName": "Paulo",

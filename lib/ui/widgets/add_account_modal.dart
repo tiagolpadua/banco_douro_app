@@ -4,7 +4,7 @@ import 'package:banco_douro_app/utils/id_generator.dart';
 import 'package:flutter/material.dart';
 import '/models/account.dart';
 import '/services/account_service.dart';
-import '/ui/styles/colors.dart';
+import '/ui/theme/app_colors.dart';
 
 class AddAccountModal extends StatefulWidget {
   const AddAccountModal({super.key});
@@ -50,103 +50,225 @@ class _AddAccountModalState extends State<AddAccountModal> {
   Widget build(BuildContext context) {
     return Container(
       height: MediaQuery.of(context).size.height * 0.75,
+      decoration: const BoxDecoration(
+        color: AppColors.cardBackground,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
       padding: EdgeInsets.only(
         left: 32,
         right: 32,
-        top: 32,
+        top: 12,
         bottom: MediaQuery.of(context).viewInsets.bottom,
       ),
       child: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const SizedBox(height: 16),
+            // Handle indicator
             Center(
-              child: Image.asset(
-                "assets/images/icon_add_account.png",
-                width: 64,
+              child: Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(2),
+                ),
               ),
             ),
-            const SizedBox(height: 32),
+            const SizedBox(height: 24),
+
+            // Ícone com fundo gradiente
+            Center(
+              child: Container(
+                width: 72,
+                height: 72,
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [AppColors.primary, AppColors.primaryLight],
+                  ),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: const Icon(
+                  Icons.person_add_outlined,
+                  color: Colors.white,
+                  size: 36,
+                ),
+              ),
+            ),
+            const SizedBox(height: 24),
+
+            // Título
             const Text(
               "Adicionar nova conta",
-              style: TextStyle(fontWeight: FontWeight.w400, fontSize: 24),
+              style: TextStyle(
+                fontWeight: FontWeight.w600,
+                fontSize: 22,
+                color: AppColors.textPrimary,
+              ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 6),
             const Text(
               "Preencha os dados abaixo:",
-              style: TextStyle(fontWeight: FontWeight.w400, fontSize: 14),
+              style: TextStyle(
+                fontWeight: FontWeight.w400,
+                fontSize: 13,
+                color: AppColors.textSecondary,
+              ),
             ),
+            const SizedBox(height: 20),
+
+            // Campo Nome
             TextFormField(
               controller: _nameController,
-              decoration: const InputDecoration(label: Text("Nome")),
+              decoration: InputDecoration(
+                labelText: "Nome",
+                prefixIcon: const Icon(
+                  Icons.person_outline,
+                  color: AppColors.textSecondary,
+                ),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: Colors.grey.shade300),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: Colors.grey.shade300),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: AppColors.primary, width: 2),
+                ),
+              ),
             ),
+            const SizedBox(height: 14),
+
+            // Campo Último nome
             TextFormField(
               controller: _lastNameController,
-              decoration: const InputDecoration(label: Text("Último nome")),
+              decoration: InputDecoration(
+                labelText: "Último nome",
+                prefixIcon: const Icon(
+                  Icons.person_outline,
+                  color: AppColors.textSecondary,
+                ),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: Colors.grey.shade300),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: Colors.grey.shade300),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: AppColors.primary, width: 2),
+                ),
+              ),
             ),
-            const SizedBox(height: 16),
-            const Text("Tipo da conta"),
+            const SizedBox(height: 20),
+
+            // Tipo da conta
+            const Text(
+              "Tipo da conta",
+              style: TextStyle(
+                fontSize: 13,
+                color: AppColors.textSecondary,
+              ),
+            ),
+            const SizedBox(height: 6),
             _isLoadingTypes
-                ? const Center(child: CircularProgressIndicator())
-                : DropdownButton<String>(
-                    value: _selectedAccountTypeId,
-                    isExpanded: true,
-                    items: _accountTypes.map((type) {
-                      return DropdownMenuItem(
-                        value: type.id,
-                        child: Text(type.description),
-                      );
-                    }).toList(),
-                    onChanged: (valor) {
-                      if (valor != null) {
-                        setState(() {
-                          _selectedAccountTypeId = valor;
-                        });
-                      }
-                    },
+                ? const Center(
+                    child: CircularProgressIndicator(color: AppColors.primary),
+                  )
+                : Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.grey.shade300),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: DropdownButton<String>(
+                      value: _selectedAccountTypeId,
+                      isExpanded: true,
+                      underline: const SizedBox(),
+                      icon: const Icon(Icons.keyboard_arrow_down, color: AppColors.textSecondary),
+                      items: _accountTypes.map((type) {
+                        return DropdownMenuItem(
+                          value: type.id,
+                          child: Text(
+                            type.description,
+                            style: const TextStyle(color: AppColors.textPrimary),
+                          ),
+                        );
+                      }).toList(),
+                      onChanged: (valor) {
+                        if (valor != null) {
+                          setState(() {
+                            _selectedAccountTypeId = valor;
+                          });
+                        }
+                      },
+                    ),
                   ),
             const SizedBox(height: 32),
+
+            // Botões
             Row(
               children: [
                 Expanded(
-                  child: ElevatedButton(
-                    onPressed: (isLoading)
-                        ? null
-                        : () {
-                            onButtonCancelClicked();
-                          },
-                    child: const Text(
-                      "Cancelar",
-                      style: TextStyle(color: Colors.black),
+                  child: SizedBox(
+                    height: 48,
+                    child: OutlinedButton(
+                      onPressed: isLoading ? null : onButtonCancelClicked,
+                      style: OutlinedButton.styleFrom(
+                        side: const BorderSide(color: AppColors.primary),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: const Text(
+                        "Cancelar",
+                        style: TextStyle(
+                          color: AppColors.primary,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
                     ),
                   ),
                 ),
                 const SizedBox(width: 16),
                 Expanded(
-                  child: ElevatedButton(
-                    onPressed: () {
-                      onButtonSendClicked();
-                    },
-                    style: const ButtonStyle(
-                      backgroundColor: WidgetStatePropertyAll(AppColor.orange),
-                    ),
-                    child: (isLoading)
-                        ? const SizedBox(
-                            width: 16,
-                            height: 16,
-                            child: CircularProgressIndicator(
-                              color: Colors.white,
+                  child: SizedBox(
+                    height: 48,
+                    child: ElevatedButton(
+                      onPressed: isLoading ? null : onButtonSendClicked,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: isLoading
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
+                            )
+                          : const Text(
+                              "Adicionar",
+                              style: TextStyle(fontWeight: FontWeight.w600),
                             ),
-                          )
-                        : const Text(
-                            "Adicionar",
-                            style: TextStyle(color: Colors.black),
-                          ),
+                    ),
                   ),
                 ),
               ],
             ),
+            const SizedBox(height: 16),
           ],
         ),
       ),

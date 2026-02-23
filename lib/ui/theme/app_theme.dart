@@ -118,16 +118,23 @@ class AppTheme {
       colorScheme: ColorScheme.fromSeed(seedColor: AppColors.primary),
       scaffoldBackgroundColor: AppColors.background,
       appBarTheme: const AppBarTheme(
-        backgroundColor: Color.fromARGB(255, 214, 191, 191),
-        foregroundColor: AppColors.textPrimary,
+        backgroundColor: AppColors.primary,
+        foregroundColor: AppColors.textOnPrimary,
         elevation: 0,
         centerTitle: false,
         titleTextStyle: TextStyle(
           fontFamily: 'Montserrat',
           fontSize: 20,
           fontWeight: FontWeight.w600,
-          color: AppColors.textPrimary,
+          color: AppColors.textOnPrimary,
         ),
+        iconTheme: IconThemeData(color: AppColors.textOnPrimary),
+      ),
+      floatingActionButtonTheme: const FloatingActionButtonThemeData(
+        backgroundColor: AppColors.accent,
+        foregroundColor: AppColors.textPrimary,
+        elevation: 4,
+        shape: CircleBorder(),
       ),
       cardTheme: CardThemeData(
         elevation: 2,

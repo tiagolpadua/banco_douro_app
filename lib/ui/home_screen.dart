@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import '/models/account.dart';
 import '/ui/widgets/account_widget.dart';
 import '/ui/widgets/add_account_modal.dart';
-import 'styles/colors.dart';
+import 'theme/app_colors.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -42,13 +42,77 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: AppColor.lightGrey,
-        title: const Text("Sistema de gestão de contas"),
-        actions: [
-          IconButton(
-            onPressed: _onLogoutPressed,
-            icon: const Icon(Icons.logout),
+      backgroundColor: AppColors.background,
+      body: Column(
+        children: [
+          // Header com gradiente igual ao login
+          Container(
+            width: double.infinity,
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [AppColors.primary, AppColors.primaryLight],
+              ),
+            ),
+            child: SafeArea(
+              bottom: false,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 16, 12, 20),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          "Sistema de gestão de contas",
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white,
+                            fontFamily: 'Montserrat',
+                          ),
+                        ),
+                        SizedBox(height: 4),
+                        Text(
+                          "Banco Douro",
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: Colors.white60,
+                            fontFamily: 'Montserrat',
+                          ),
+                        ),
+                      ],
+                    ),
+                    IconButton(
+                      onPressed: _onLogoutPressed,
+                      icon: const Icon(Icons.logout, color: Colors.white),
+                      tooltip: 'Sair',
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+
+          // Lista de contas
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+              child: ListView.builder(
+                itemCount: _listAccounts.length,
+                itemBuilder: (context, index) {
+                  Account account = _listAccounts[index];
+                  return AccountWidget(
+                    account: account,
+                    accountTypes: _accountViewModel.accountTypes,
+                    onUpdate: refreshGetAll,
+                    onDelete: refreshGetAll,
+                  );
+                },
+              ),
+            ),
           ),
         ],
       ),
@@ -63,31 +127,8 @@ class _HomeScreenState extends State<HomeScreen> {
           );
           refreshGetAll();
         },
-        backgroundColor: AppColor.orange,
-        child: const Icon(Icons.add, color: Colors.black),
-      ),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            children: [
-              Expanded(
-                child: ListView.builder(
-                  itemCount: _listAccounts.length,
-                  itemBuilder: (context, index) {
-                    Account account = _listAccounts[index];
-                    return AccountWidget(
-                      account: account,
-                      accountTypes: _accountViewModel.accountTypes,
-                      onUpdate: refreshGetAll,
-                      onDelete: refreshGetAll,
-                    );
-                  },
-                ),
-              ),
-            ],
-          ),
-        ),
+        backgroundColor: AppColors.accent,
+        child: const Icon(Icons.add, color: Colors.white),
       ),
     );
   }
