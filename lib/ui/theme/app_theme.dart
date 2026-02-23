@@ -9,13 +9,14 @@ class AppTheme {
       scaffoldBackgroundColor: AppColors.background,
       appBarTheme: const AppBarTheme(
         backgroundColor: Color.fromARGB(1, 255, 255, 255),
-        foregroundColor: Colors.white,
+        foregroundColor: AppColors.textPrimary,
         elevation: 0,
         centerTitle: false,
         titleTextStyle: TextStyle(
           fontFamily: 'Montserrat',
           fontSize: 20,
           fontWeight: FontWeight.w600,
+          color: AppColors.textPrimary,
         ),
       ),
       cardTheme: CardThemeData(
@@ -118,13 +119,14 @@ class AppTheme {
       scaffoldBackgroundColor: AppColors.background,
       appBarTheme: const AppBarTheme(
         backgroundColor: Color.fromARGB(255, 214, 191, 191),
-        foregroundColor: Colors.white,
+        foregroundColor: AppColors.textPrimary,
         elevation: 0,
         centerTitle: false,
         titleTextStyle: TextStyle(
           fontFamily: 'Montserrat',
           fontSize: 20,
           fontWeight: FontWeight.w600,
+          color: AppColors.textPrimary,
         ),
       ),
       cardTheme: CardThemeData(
