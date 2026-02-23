@@ -66,7 +66,7 @@ class _LoginScreenState extends State<LoginScreen> {
     try {
       await _authService.login(email, password);
       if (mounted) {
-        Navigator.pushReplacementNamed(context, 'home');
+        Navigator.pushReplacementNamed(context, 'dashboard');
       }
     } catch (e) {
       if (mounted) {
