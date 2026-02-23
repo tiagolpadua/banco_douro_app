@@ -1,4 +1,5 @@
 import 'package:banco_douro_app/services/auth_service.dart';
+import 'package:banco_douro_app/ui/dashboard_screen.dart';
 import 'package:banco_douro_app/ui/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'ui/home_screen.dart';
@@ -24,10 +25,11 @@ class BancoDouroApp extends StatelessWidget {
       title: 'Banco Douro',
       theme: AppTheme.lightTheme,
       routes: {
+        "dashboard": (context) => const DashboardScreen(),
         "login": (context) => const LoginScreen(),
         "home": (context) => const HomeScreen(),
       },
-      initialRoute: isLoggedIn ? "home" : "login",
+      initialRoute: isLoggedIn ? "dashboard" : "login",
     );
   }
 }
