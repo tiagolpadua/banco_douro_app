@@ -219,7 +219,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ),
             ),
 
-            const SliverToBoxAdapter(child: SizedBox(height: 16)),
+            SliverToBoxAdapter(child: SizedBox(height: 16)),
 
             SliverToBoxAdapter(
               child: Padding(
