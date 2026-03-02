@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
-import '../services/auth_service.dart';
+import 'package:provider/provider.dart';
+import '../providers/account_provider.dart';
+import '../providers/auth_provider.dart';
 import 'theme/app_colors.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -14,7 +16,6 @@ class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  final _authService = AuthService();
   bool _isLoading = false;
 
   @override
@@ -63,24 +64,31 @@ class _LoginScreenState extends State<LoginScreen> {
     final email = _emailController.text;
     final password = _passwordController.text;
 
-    try {
-      await _authService.login(email, password);
-      if (mounted) {
-        Navigator.pushReplacementNamed(context, 'dashboard');
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Erro ao conectar: ${e.toString()}'),
-            backgroundColor: AppColors.negative,
-          ),
-        );
-      }
-    } finally {
-      if (mounted) {
-        setState(() => _isLoading = false);
-      }
+    final authProvider = context.read<AuthProvider>();
+    final success = await authProvider.login(email, password);
+
+    if (!mounted) {
+      return;
+    }
+
+    if (success) {
+      // Dispara o carregamento antes de navegar. DashboardScreen é responsável
+      // por exibir o estado de loading via Consumer — sem precisar de wrapper.
+      context.read<AccountProvider>().initialize();
+      Navigator.pushReplacementNamed(context, 'dashboard');
+    } else {
+      final message = authProvider.error ?? 'Erro ao conectar';
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(message.replaceFirst('Exception: ', '')),
+          backgroundColor: AppColors.negative,
+        ),
+      );
+      authProvider.clearError();
+    }
+
+    if (mounted) {
+      setState(() => _isLoading = false);
     }
   }
 

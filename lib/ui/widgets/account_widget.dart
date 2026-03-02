@@ -1,9 +1,10 @@
 import 'dart:math';
 
+import 'package:banco_douro_app/providers/account_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../models/account.dart';
 import '../../models/account_type.dart';
-import '../../services/account_service.dart';
 import '../theme/app_colors.dart';
 
 class AccountWidget extends StatelessWidget {
@@ -32,19 +33,19 @@ class AccountWidget extends StatelessWidget {
 
   Future<void> _onDeletePressed(BuildContext context) async {
     try {
-      final success = await AccountService().deleteAccount(account.id);
+      await context.read<AccountProvider>().deleteAccount(account.id);
 
       if (context.mounted) {
-        if (success) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Conta excluída com sucesso!')),
-          );
-          onDelete?.call();
-        }
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Conta excluida com sucesso!')),
+        );
+        onDelete?.call();
       }
     } catch (e) {
       if (context.mounted) {
-        print('Erro ao excluir conta. Tente novamente.');
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Erro ao excluir conta: $e')));
       }
     }
   }
@@ -131,12 +132,20 @@ class AccountWidget extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               IconButton(
-                icon: const Icon(Icons.edit_outlined, color: AppColors.accent, size: 22),
+                icon: const Icon(
+                  Icons.edit_outlined,
+                  color: AppColors.accent,
+                  size: 22,
+                ),
                 onPressed: () => _onEditPressed(context),
                 tooltip: 'Editar',
               ),
               IconButton(
-                icon: const Icon(Icons.delete_outline, color: AppColors.negative, size: 22),
+                icon: const Icon(
+                  Icons.delete_outline,
+                  color: AppColors.negative,
+                  size: 22,
+                ),
                 onPressed: () => _onDeletePressed(context),
                 tooltip: 'Excluir',
               ),

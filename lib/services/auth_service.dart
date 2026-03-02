@@ -51,7 +51,6 @@ class AuthService {
   }
 
   Future<bool> isLoggedIn() async {
-    print('>>>> Checking login status...');
     final token = await getToken();
     return token != null && token.isNotEmpty;
   }

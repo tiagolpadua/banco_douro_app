@@ -41,6 +41,7 @@ dependencies:
   http_interceptor: ^2.0.0
   logger: ^2.6.2
   shared_preferences: ^2.5.4
+  provider: ^6.1.5
 
 dev_dependencies:
   flutter_test:

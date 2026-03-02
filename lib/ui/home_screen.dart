@@ -1,7 +1,7 @@
-import 'package:banco_douro_app/services/auth_service.dart';
-import 'package:banco_douro_app/viewmodels/account_viewmodel.dart';
+import 'package:banco_douro_app/providers/account_provider.dart';
+import 'package:banco_douro_app/providers/auth_provider.dart';
 import 'package:flutter/material.dart';
-import '/models/account.dart';
+import 'package:provider/provider.dart';
 import '/ui/widgets/account_widget.dart';
 import '/ui/widgets/add_account_modal.dart';
 import 'theme/app_colors.dart';
@@ -14,26 +14,16 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  final AccountViewModel _accountViewModel = AccountViewModel();
-  List<Account> _listAccounts = [];
-  final AuthService _authService = AuthService();
-
   @override
   void initState() {
     super.initState();
-    refreshGetAll();
-  }
-
-  Future<void> refreshGetAll() async {
-    await _accountViewModel.loadAccounts();
-    await _accountViewModel.loadAccountTypes();
-    setState(() {
-      _listAccounts = _accountViewModel.accounts;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<AccountProvider>().initialize();
     });
   }
 
   Future<void> _onLogoutPressed() async {
-    await _authService.logout();
+    await context.read<AuthProvider>().logout();
     if (mounted) {
       Navigator.pushReplacementNamed(context, 'login');
     }
@@ -43,78 +33,80 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      body: Column(
-        children: [
-          // Header com gradiente igual ao login
-          Container(
-            width: double.infinity,
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [AppColors.primary, AppColors.primaryLight],
+      body: Consumer<AccountProvider>(
+        builder: (context, provider, child) => Column(
+          children: [
+            // Header com gradiente igual ao login
+            Container(
+              width: double.infinity,
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [AppColors.primary, AppColors.primaryLight],
+                ),
               ),
-            ),
-            child: SafeArea(
-              bottom: false,
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 16, 12, 20),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          "Sistema de gestão de contas",
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.white,
-                            fontFamily: 'Montserrat',
+              child: SafeArea(
+                bottom: false,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 16, 12, 20),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "Sistema de gestão de contas",
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.white,
+                              fontFamily: 'Montserrat',
+                            ),
                           ),
-                        ),
-                        SizedBox(height: 4),
-                        Text(
-                          "Banco Douro",
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: Colors.white60,
-                            fontFamily: 'Montserrat',
+                          SizedBox(height: 4),
+                          Text(
+                            "Banco Douro",
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: Colors.white60,
+                              fontFamily: 'Montserrat',
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
-                    IconButton(
-                      onPressed: _onLogoutPressed,
-                      icon: const Icon(Icons.logout, color: Colors.white),
-                      tooltip: 'Sair',
-                    ),
-                  ],
+                        ],
+                      ),
+                      IconButton(
+                        onPressed: _onLogoutPressed,
+                        icon: const Icon(Icons.logout, color: Colors.white),
+                        tooltip: 'Sair',
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
-          ),
 
-          // Lista de contas
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-              child: ListView.builder(
-                itemCount: _listAccounts.length,
-                itemBuilder: (context, index) {
-                  Account account = _listAccounts[index];
-                  return AccountWidget(
-                    account: account,
-                    accountTypes: _accountViewModel.accountTypes,
-                    onUpdate: refreshGetAll,
-                    onDelete: refreshGetAll,
-                  );
-                },
+            // Lista de contas
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+                child: provider.isLoading && provider.accounts.isEmpty
+                    ? const Center(child: CircularProgressIndicator())
+                    : ListView.builder(
+                        itemCount: provider.accounts.length,
+                        itemBuilder: (context, index) {
+                          final account = provider.accounts[index];
+                          return AccountWidget(
+                            account: account,
+                            accountTypes: provider.accountTypes,
+                          );
+                        },
+                      ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
@@ -125,7 +117,6 @@ class _HomeScreenState extends State<HomeScreen> {
               return const AddAccountModal();
             },
           );
-          refreshGetAll();
         },
         backgroundColor: AppColors.accent,
         child: const Icon(Icons.add, color: Colors.white),
