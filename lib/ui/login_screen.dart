@@ -220,6 +220,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                             // Campo de email
                             TextFormField(
+                              key: const Key('emailField'),
                               controller: _emailController,
                               keyboardType: TextInputType.emailAddress,
                               validator: _validateEmail,
@@ -235,6 +236,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                             // Campo de senha
                             TextFormField(
+                              key: const Key('passwordField'),
                               controller: _passwordController,
                               obscureText: true,
                               validator: _validatePassword,

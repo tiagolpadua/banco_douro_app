@@ -25,6 +25,7 @@ double calculateTaxesByAccount({
     return TaxConfig.defaultTaxRate;
   }
 
-  final rate = TaxConfig.taxRates[accountType] ?? TaxConfig.taxRates['BRIGADEIRO']!;
+  final rate =
+      TaxConfig.taxRates[accountType] ?? TaxConfig.taxRates['BRIGADEIRO']!;
   return amount * rate;
 }
