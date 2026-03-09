@@ -75,7 +75,7 @@ class _LoginScreenState extends State<LoginScreen> {
       // Dispara o carregamento antes de navegar. DashboardScreen é responsável
       // por exibir o estado de loading via Consumer — sem precisar de wrapper.
       context.read<AccountProvider>().initialize();
-      Navigator.pushReplacementNamed(context, 'dashboard');
+      // Navigator.pushReplacementNamed(context, 'dashboard');
     } else {
       final message = authProvider.error ?? 'Erro ao conectar';
       ScaffoldMessenger.of(context).showSnackBar(
