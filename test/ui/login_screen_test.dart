@@ -31,7 +31,12 @@ void main() {
           value: mockAccountProvider,
         ),
       ],
-      child: const MaterialApp(home: LoginScreen()),
+      child: MaterialApp(
+        home: const LoginScreen(),
+        routes: {
+          'dashboard': (_) => const Scaffold(body: Text('Dashboard')),
+        },
+      ),
     );
   }
 

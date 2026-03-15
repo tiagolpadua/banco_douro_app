@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:http_interceptor/http_interceptor.dart';
 import 'package:logger/logger.dart';
@@ -13,9 +14,13 @@ import 'http_interceptors.dart';
 class AccountService {
   final Logger _logger = Logger(printer: PrettyPrinter(methodCount: 0));
 
-  final http.Client _client = InterceptedClient.build(
-    interceptors: [LoggingInterceptor()],
-  );
+  final http.Client _client;
+
+  AccountService()
+    : _client = InterceptedClient.build(interceptors: [LoggingInterceptor()]);
+
+  @visibleForTesting
+  AccountService.withClient(http.Client client) : _client = client;
 
   String get _url => ApiConfig.accountsUrl;
 
