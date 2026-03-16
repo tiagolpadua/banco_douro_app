@@ -58,3 +58,5 @@ void main() {
     });
   });
 }
+
+// widget -> provider -> service -> repository -> datasource (API/local)

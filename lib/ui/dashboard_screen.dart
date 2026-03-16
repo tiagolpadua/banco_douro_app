@@ -42,6 +42,7 @@ class DashboardScreen extends StatelessWidget {
     final screenWidth = MediaQuery.of(context).size.width;
 
     return Scaffold(
+      key: const Key('dashboardScreen'),
       backgroundColor: AppColors.background,
       body: SafeArea(
         top: false,
