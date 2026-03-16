@@ -48,6 +48,62 @@
       "lastName": "a7",
       "balance": 0,
       "accountType": "1"
+    },
+    {
+      "id": "bb7c40cf-275f-44c9-a431-9dde42071a1c",
+      "name": "Carlos",
+      "lastName": "Integration",
+      "balance": 0,
+      "accountType": "2"
+    },
+    {
+      "id": "3d92321c-c9e8-4bac-ae8f-400edb0bf045",
+      "name": "Maria",
+      "lastName": "Persistente",
+      "balance": 0,
+      "accountType": "2"
+    },
+    {
+      "id": "8e018032-2a28-4186-8692-ebff40ac00b7",
+      "name": "Carlos",
+      "lastName": "Integration",
+      "balance": 0,
+      "accountType": "2"
+    },
+    {
+      "id": "d09cb1bc-5098-4b6c-8e2f-8c4a029d6c4e",
+      "name": "Maria",
+      "lastName": "Persistente",
+      "balance": 0,
+      "accountType": "2"
+    },
+    {
+      "id": "4aa47dfd-dcd1-4c7a-9062-568a251e2843",
+      "name": "Carlos",
+      "lastName": "Integration",
+      "balance": 0,
+      "accountType": "2"
+    },
+    {
+      "id": "d8cf6743-6d0a-49b3-98d7-8471f7432c79",
+      "name": "Maria",
+      "lastName": "Persistente",
+      "balance": 0,
+      "accountType": "2"
+    },
+    {
+      "id": "a7fcdd59-e9bc-4359-88ee-0048d4c43d68",
+      "name": "Carlos",
+      "lastName": "Integration",
+      "balance": 0,
+      "accountType": "1"
+    },
+    {
+      "id": "6952c799-714c-4c46-8d70-018aeceff4c1",
+      "name": "Maria",
+      "lastName": "Persistente",
+      "balance": 0,
+      "accountType": "1"
     }
   ],
   "transactions": [

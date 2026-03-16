@@ -42,6 +42,7 @@ class DashboardScreen extends StatelessWidget {
     final screenWidth = MediaQuery.of(context).size.width;
 
     return Scaffold(
+      key: const Key('dashboardScreen'),
       backgroundColor: AppColors.background,
       body: SafeArea(
         top: false,
@@ -328,6 +329,7 @@ class DashboardScreen extends StatelessWidget {
                   SliverPadding(
                     padding: const EdgeInsets.all(16),
                     sliver: SliverList(
+                      key: const Key('accountList'),
                       delegate: SliverChildBuilderDelegate((context, index) {
                         final account = provider.accounts[index];
                         return AccountWidget(
@@ -343,6 +345,7 @@ class DashboardScreen extends StatelessWidget {
         ),
       ),
       floatingActionButton: FloatingActionButton(
+        key: const Key('addAccountButton'),
         onPressed: () => _showAddAccountModal(context),
         backgroundColor: AppColors.accent,
         child: const Icon(Icons.add, color: Colors.white),

@@ -116,6 +116,7 @@ class _AddAccountModalState extends State<AddAccountModal> {
 
               // Campo Nome
               TextFormField(
+                key: const Key('nameField'),
                 controller: _nameController,
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
@@ -150,6 +151,7 @@ class _AddAccountModalState extends State<AddAccountModal> {
 
               // Campo Último nome
               TextFormField(
+                key: const Key('lastNameField'),
                 controller: _lastNameController,
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
@@ -206,6 +208,7 @@ class _AddAccountModalState extends State<AddAccountModal> {
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: DropdownButton<String>(
+                        key: const Key('accountTypeDropdown'),
                         value: _selectedAccountTypeId,
                         isExpanded: true,
                         underline: const SizedBox(),
@@ -264,6 +267,7 @@ class _AddAccountModalState extends State<AddAccountModal> {
                     child: SizedBox(
                       height: 48,
                       child: ElevatedButton(
+                        key: const Key('saveAccountButton'),
                         onPressed: isLoading ? null : onButtonSendClicked,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.primary,

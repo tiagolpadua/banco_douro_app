@@ -95,6 +95,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: const Key('loginScreen'),
       body: SingleChildScrollView(
         child: Stack(
           children: [
@@ -254,6 +255,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             SizedBox(
                               height: 52,
                               child: ElevatedButton(
+                                key: const Key('loginButton'),
                                 onPressed: _isLoading ? null : _onLoginPressed,
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: AppColors.primary,
