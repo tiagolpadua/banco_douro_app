@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
 import '../providers/account_provider.dart';
 import '../providers/auth_provider.dart';
+import 'dashboard_screen.dart';
 import 'theme/app_colors.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -75,7 +76,24 @@ class _LoginScreenState extends State<LoginScreen> {
       // Dispara o carregamento antes de navegar. DashboardScreen é responsável
       // por exibir o estado de loading via Consumer — sem precisar de wrapper.
       context.read<AccountProvider>().initialize();
-      Navigator.pushReplacementNamed(context, 'dashboard');
+      Navigator.pushReplacement(
+        context,
+        PageRouteBuilder(
+          transitionDuration: const Duration(milliseconds: 600),
+          pageBuilder: (_, __, ___) => const DashboardScreen(),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            final fade = CurvedAnimation(parent: animation, curve: Curves.easeIn);
+            final slide = Tween<Offset>(
+              begin: const Offset(0, 0.06),
+              end: Offset.zero,
+            ).animate(CurvedAnimation(parent: animation, curve: Curves.easeOutCubic));
+            return FadeTransition(
+              opacity: fade,
+              child: SlideTransition(position: slide, child: child),
+            );
+          },
+        ),
+      );
     } else {
       final message = authProvider.error ?? 'Erro ao conectar';
       ScaffoldMessenger.of(context).showSnackBar(
