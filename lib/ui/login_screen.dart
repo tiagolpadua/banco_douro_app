@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
@@ -19,6 +20,9 @@ class _LoginScreenState extends State<LoginScreen> {
   final _passwordController = TextEditingController();
   bool _isLoading = false;
 
+  double _starsOpacity = 0.15;
+  Timer? _starsTimer;
+
   @override
   void initState() {
     super.initState();
@@ -26,10 +30,17 @@ class _LoginScreenState extends State<LoginScreen> {
       _emailController.text = 'admin@admin.com';
       _passwordController.text = 'admin';
     }
+
+    _starsTimer = Timer.periodic(const Duration(milliseconds: 1800), (_) {
+      setState(() {
+        _starsOpacity = _starsOpacity > 0.4 ? 0.15 : 0.7;
+      });
+    });
   }
 
   @override
   void dispose() {
+    _starsTimer?.cancel();
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
@@ -144,9 +155,11 @@ class _LoginScreenState extends State<LoginScreen> {
             Positioned(
               top: 40,
               left: 16,
-              child: Image.asset(
-                "assets/images/stars.png",
-                opacity: const AlwaysStoppedAnimation(0.5),
+              child: AnimatedOpacity(
+                opacity: _starsOpacity,
+                duration: const Duration(milliseconds: 1800),
+                curve: Curves.easeInOut,
+                child: Image.asset("assets/images/stars.png"),
               ),
             ),
 
@@ -287,16 +300,24 @@ class _LoginScreenState extends State<LoginScreen> {
                                     fontFamily: 'Montserrat',
                                   ),
                                 ),
-                                child: _isLoading
-                                    ? const SizedBox(
-                                        height: 22,
-                                        width: 22,
-                                        child: CircularProgressIndicator(
-                                          strokeWidth: 2,
-                                          color: Colors.white,
-                                        ),
-                                      )
-                                    : const Text('Entrar'),
+                                child: AnimatedSwitcher(
+                                  duration: const Duration(milliseconds: 300),
+                                  transitionBuilder: (child, animation) {
+                                    final scale = Tween<double>(begin: 0.6, end: 1.0).animate(animation);
+                                    return ScaleTransition(scale: scale, child: child);
+                                  },
+                                  child: _isLoading
+                                      ? const SizedBox(
+                                          key: ValueKey('loading'),
+                                          height: 22,
+                                          width: 22,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2,
+                                            color: Colors.white,
+                                          ),
+                                        )
+                                      : const Text('Entrar', key: ValueKey('label')),
+                                ),
                               ),
                             ),
                           ],
