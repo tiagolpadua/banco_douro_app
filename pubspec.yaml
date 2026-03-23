@@ -42,6 +42,7 @@ dependencies:
   logger: ^2.6.2
   shared_preferences: ^2.5.4
   provider: ^6.1.5
+  flutter_native_splash: ^2.4.7
 
 dev_dependencies:
   flutter_test:
@@ -104,6 +105,7 @@ flutter:
     - assets/images/banner.png
     - assets/images/icon_add_account.png
     - assets/images/logo.png
+    - assets/images/logo_splash.png
     - assets/images/stars.png
     - assets/images/
   
@@ -118,3 +120,12 @@ flutter:
           weight: 600
         - asset: assets/fonts/Montserrat-Bold.ttf
           weight: 700
+
+flutter_native_splash:
+  color: "#FFFFFF"
+  image: assets/images/logo_splash.png
+  android_12:
+    image: assets/images/logo_splash.png
+    color: "#FFFFFF"
+  ios: true
+  web: false

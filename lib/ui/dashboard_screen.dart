@@ -6,8 +6,27 @@ import 'package:banco_douro_app/ui/widgets/add_account_modal.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-class DashboardScreen extends StatelessWidget {
+class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
+
+  @override
+  State<DashboardScreen> createState() => _DashboardScreenState();
+}
+
+class _DashboardScreenState extends State<DashboardScreen> {
+  bool _summaryVisible = false;
+  bool _fabVisible = false;
+
+  @override
+  void initState() {
+    super.initState();
+    Future.delayed(const Duration(milliseconds: 100), () {
+      if (mounted) setState(() => _summaryVisible = true);
+    });
+    Future.delayed(const Duration(milliseconds: 500), () {
+      if (mounted) setState(() => _fabVisible = true);
+    });
+  }
 
   int _gridColumns(double width) {
     if (width >= 900) return 4;
@@ -142,38 +161,44 @@ class DashboardScreen extends StatelessWidget {
                     ),
                   ),
                 SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: _SummaryCard(
-                            title: 'Saldo total',
-                            value:
-                                'R\$ ${provider.totalBalance.toStringAsFixed(2)}',
-                            icon: Icons.account_balance_wallet,
-                            color: AppColors.primary,
+                  child: AnimatedOpacity(
+                    duration: const Duration(milliseconds: 500),
+                    curve: Curves.easeIn,
+                    opacity: _summaryVisible && !provider.isLoading ? 1.0 : 0.0,
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: _SummaryCard(
+                              title: 'Saldo total',
+                              customValue: AnimatedBalance(
+                                value: provider.totalBalance,
+                              ),
+                              icon: Icons.account_balance_wallet,
+                              color: AppColors.primary,
+                            ),
                           ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: _SummaryCard(
-                            title: 'Tipos',
-                            value: '${provider.accountTypes.length}',
-                            icon: Icons.category_outlined,
-                            color: AppColors.accent,
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: _SummaryCard(
+                              title: 'Tipos',
+                              value: '${provider.accountTypes.length}',
+                              icon: Icons.category_outlined,
+                              color: AppColors.accent,
+                            ),
                           ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: _SummaryCard(
-                            title: 'Contas',
-                            value: '${provider.accounts.length}',
-                            icon: Icons.people,
-                            color: AppColors.primaryLight,
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: _SummaryCard(
+                              title: 'Contas',
+                              value: '${provider.accounts.length}',
+                              icon: Icons.people,
+                              color: AppColors.primaryLight,
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 ),
@@ -331,9 +356,12 @@ class DashboardScreen extends StatelessWidget {
                     sliver: SliverList(
                       delegate: SliverChildBuilderDelegate((context, index) {
                         final account = provider.accounts[index];
-                        return AccountWidget(
-                          account: account,
-                          accountTypes: provider.accountTypes,
+                        return _AnimatedAccountItem(
+                          index: index,
+                          child: AccountWidget(
+                            account: account,
+                            accountTypes: provider.accountTypes,
+                          ),
                         );
                       }, childCount: provider.accounts.length),
                     ),
@@ -343,10 +371,16 @@ class DashboardScreen extends StatelessWidget {
           },
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => _showAddAccountModal(context),
-        backgroundColor: AppColors.accent,
-        child: const Icon(Icons.add, color: Colors.white),
+      floatingActionButton: AnimatedScale(
+        scale: _fabVisible ? 1.0 : 0.0,
+        duration: const Duration(milliseconds: 400),
+        curve: Curves.elasticOut,
+        child: FloatingActionButton(
+          key: const Key('addAccountButton'),
+          onPressed: () => _showAddAccountModal(context),
+          backgroundColor: AppColors.accent,
+          child: const Icon(Icons.add, color: Colors.white),
+        ),
       ),
     );
   }
@@ -354,13 +388,15 @@ class DashboardScreen extends StatelessWidget {
 
 class _SummaryCard extends StatelessWidget {
   final String title;
-  final String value;
+  final String? value;
+  final Widget? customValue;
   final IconData icon;
   final Color color;
 
   const _SummaryCard({
     required this.title,
-    required this.value,
+    this.value,
+    this.customValue,
     required this.icon,
     required this.color,
   });
@@ -394,14 +430,15 @@ class _SummaryCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 6),
-          Text(
-            value,
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
-              color: AppColors.textPrimary,
-            ),
-          ),
+          customValue ??
+              Text(
+                value ?? '',
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.textPrimary,
+                ),
+              ),
         ],
       ),
     );
@@ -493,6 +530,68 @@ class _ShortcutTile extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _AnimatedAccountItem extends StatefulWidget {
+  final Widget child;
+  final int index;
+
+  const _AnimatedAccountItem({required this.child, required this.index});
+
+  @override
+  State<_AnimatedAccountItem> createState() => _AnimatedAccountItemState();
+}
+
+class _AnimatedAccountItemState extends State<_AnimatedAccountItem> {
+  bool _visible = false;
+
+  @override
+  void initState() {
+    super.initState();
+    final delay = widget.index < 6 ? 80 * widget.index : 0;
+    Future.delayed(Duration(milliseconds: delay), () {
+      if (mounted) setState(() => _visible = true);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedSlide(
+      duration: const Duration(milliseconds: 350),
+      curve: Curves.easeOut,
+      offset: _visible ? Offset.zero : const Offset(0, 0.25),
+      child: AnimatedOpacity(
+        duration: const Duration(milliseconds: 350),
+        opacity: _visible ? 1.0 : 0.0,
+        child: widget.child,
+      ),
+    );
+  }
+}
+
+class AnimatedBalance extends StatelessWidget {
+  final double value;
+
+  const AnimatedBalance({super.key, required this.value});
+
+  @override
+  Widget build(BuildContext context) {
+    return TweenAnimationBuilder<double>(
+      tween: Tween<double>(begin: 0, end: value),
+      duration: const Duration(milliseconds: 1000),
+      curve: Curves.easeOut,
+      builder: (context, animatedValue, child) {
+        return Text(
+          'R\$ ${animatedValue.toStringAsFixed(2)}',
+          style: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w700,
+            color: AppColors.textPrimary,
+          ),
+        );
+      },
     );
   }
 }
