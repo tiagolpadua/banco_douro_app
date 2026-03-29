@@ -1,3 +1,4 @@
+import 'package:animations/animations.dart';
 import 'package:banco_douro_app/providers/account_provider.dart';
 import 'package:banco_douro_app/providers/auth_provider.dart';
 import 'package:banco_douro_app/ui/theme/app_colors.dart';
@@ -329,43 +330,63 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             color: AppColors.textPrimary,
                           ),
                         ),
-                        if (provider.isLoading)
-                          const SizedBox(
-                            width: 18,
-                            height: 18,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          ),
                       ],
                     ),
                   ),
                 ),
-                if (!provider.isLoading && provider.accounts.isEmpty)
-                  const SliverFillRemaining(
-                    hasScrollBody: false,
-                    child: Center(
-                      child: Text(
-                        'Nenhuma conta encontrada.\nToque em + para adicionar.',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(color: AppColors.textSecondary),
-                      ),
-                    ),
-                  )
-                else
-                  SliverPadding(
-                    padding: const EdgeInsets.all(16),
-                    sliver: SliverList(
-                      delegate: SliverChildBuilderDelegate((context, index) {
-                        final account = provider.accounts[index];
-                        return _AnimatedAccountItem(
-                          index: index,
-                          child: AccountWidget(
-                            account: account,
-                            accountTypes: provider.accountTypes,
+                SliverToBoxAdapter(
+                  child: PageTransitionSwitcher(
+                    duration: const Duration(milliseconds: 400),
+                    transitionBuilder: (
+                      child,
+                      primaryAnimation,
+                      secondaryAnimation,
+                    ) {
+                      return FadeThroughTransition(
+                        animation: primaryAnimation,
+                        secondaryAnimation: secondaryAnimation,
+                        child: child,
+                      );
+                    },
+                    child: provider.isLoading
+                        ? const SizedBox(
+                            key: ValueKey('loading'),
+                            height: 200,
+                            child: Center(child: CircularProgressIndicator()),
+                          )
+                        : provider.accounts.isEmpty
+                        ? const SizedBox(
+                            key: ValueKey('empty'),
+                            height: 200,
+                            child: Center(
+                              child: Text(
+                                'Nenhuma conta encontrada.\nToque em + para adicionar.',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  color: AppColors.textSecondary,
+                                ),
+                              ),
+                            ),
+                          )
+                        : ListView.builder(
+                            key: ValueKey('list-${provider.accounts.length}'),
+                            padding: const EdgeInsets.all(16),
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            itemCount: provider.accounts.length,
+                            itemBuilder: (context, index) {
+                              final account = provider.accounts[index];
+                              return _AnimatedAccountItem(
+                                index: index,
+                                child: AccountWidget(
+                                  account: account,
+                                  accountTypes: provider.accountTypes,
+                                ),
+                              );
+                            },
                           ),
-                        );
-                      }, childCount: provider.accounts.length),
-                    ),
                   ),
+                ),
               ],
             );
           },
