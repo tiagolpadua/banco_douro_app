@@ -98,6 +98,23 @@ class AccountProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Remove a conta da lista local sem chamar a API.
+  /// Usado pelo "Desfazer" do snackbar para restaurar sem nova requisição.
+  void removeAccountLocally(String id) {
+    _accounts = _accounts.where((a) => a.id != id).toList();
+    notifyListeners();
+  }
+
+  /// Reinsere uma conta na posição original sem chamar a API.
+  /// Usado pelo "Desfazer" do snackbar para restaurar a conta removida.
+  void restoreAccountLocally(Account account, int index) {
+    final list = [..._accounts];
+    final safeIndex = index.clamp(0, list.length);
+    list.insert(safeIndex, account);
+    _accounts = list;
+    notifyListeners();
+  }
+
   void clearError() {
     if (_error == null) {
       return;

@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:banco_douro_app/ui/dashboard_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
@@ -88,33 +87,7 @@ class _LoginScreenState extends State<LoginScreen> {
       // Dispara o carregamento antes de navegar. DashboardScreen é responsável
       // por exibir o estado de loading via Consumer — sem precisar de wrapper.
       context.read<AccountProvider>().initialize();
-      Navigator.pushReplacement(
-        context,
-        PageRouteBuilder(
-          transitionDuration: const Duration(milliseconds: 300),
-          pageBuilder: (_, _, _) => const DashboardScreen(),
-          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            final fade = CurvedAnimation(
-              parent: animation,
-              curve: Curves.bounceInOut,
-            );
-            final slide =
-                Tween<Offset>(
-                  begin: const Offset(0, 10),
-                  end: Offset.zero,
-                ).animate(
-                  CurvedAnimation(
-                    parent: animation,
-                    curve: Curves.easeOutCubic,
-                  ),
-                );
-            return FadeTransition(
-              opacity: fade,
-              child: SlideTransition(position: slide, child: child),
-            );
-          },
-        ),
-      );
+      Navigator.pushReplacementNamed(context, 'dashboard');
     } else {
       final message = authProvider.error ?? 'Erro ao conectar';
       ScaffoldMessenger.of(context).showSnackBar(
