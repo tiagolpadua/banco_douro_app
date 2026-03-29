@@ -1,4 +1,5 @@
 import 'package:animations/animations.dart';
+import 'package:banco_douro_app/models/account.dart';
 import 'package:banco_douro_app/providers/account_provider.dart';
 import 'package:banco_douro_app/providers/auth_provider.dart';
 import 'package:banco_douro_app/ui/theme/app_colors.dart';
@@ -14,19 +15,33 @@ class DashboardScreen extends StatefulWidget {
   State<DashboardScreen> createState() => _DashboardScreenState();
 }
 
-class _DashboardScreenState extends State<DashboardScreen> {
+class _DashboardScreenState extends State<DashboardScreen>
+    with SingleTickerProviderStateMixin {
   bool _summaryVisible = false;
   bool _fabVisible = false;
+
+  // AnimatedIcon: controla a animação add ↔ close no FAB
+  late final AnimationController _fabIconController;
 
   @override
   void initState() {
     super.initState();
+    _fabIconController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 300),
+    );
     Future.delayed(const Duration(milliseconds: 100), () {
       if (mounted) setState(() => _summaryVisible = true);
     });
     Future.delayed(const Duration(milliseconds: 500), () {
       if (mounted) setState(() => _fabVisible = true);
     });
+  }
+
+  @override
+  void dispose() {
+    _fabIconController.dispose();
+    super.dispose();
   }
 
   int _gridColumns(double width) {
@@ -36,11 +51,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Future<void> _showAddAccountModal(BuildContext context) async {
+    // Anima o ícone para "fechar" enquanto o modal está aberto
+    _fabIconController.forward();
+
     await showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
       builder: (_) => const AddAccountModal(),
     );
+
+    // Volta para o ícone de "adicionar" após fechar o modal
+    if (mounted) _fabIconController.reverse();
   }
 
   Future<void> _logout(BuildContext context) async {
@@ -319,18 +340,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 SliverToBoxAdapter(
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text(
-                          'Contas recentes',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.textPrimary,
-                          ),
-                        ),
-                      ],
+                    child: const Text(
+                      'Contas recentes',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.textPrimary,
+                      ),
                     ),
                   ),
                 ),
@@ -368,22 +384,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               ),
                             ),
                           )
-                        : ListView.builder(
-                            key: ValueKey('list-${provider.accounts.length}'),
-                            padding: const EdgeInsets.all(16),
-                            shrinkWrap: true,
-                            physics: const NeverScrollableScrollPhysics(),
-                            itemCount: provider.accounts.length,
-                            itemBuilder: (context, index) {
-                              final account = provider.accounts[index];
-                              return _AnimatedAccountItem(
-                                index: index,
-                                child: AccountWidget(
-                                  account: account,
-                                  accountTypes: provider.accountTypes,
-                                ),
-                              );
-                            },
+                        : _AccountAnimatedList(
+                            key: const ValueKey('list'),
+                            accounts: provider.accounts,
+                            accountTypes: provider.accountTypes,
                           ),
                   ),
                 ),
@@ -400,12 +404,181 @@ class _DashboardScreenState extends State<DashboardScreen> {
           key: const Key('addAccountButton'),
           onPressed: () => _showAddAccountModal(context),
           backgroundColor: AppColors.accent,
-          child: const Icon(Icons.add, color: Colors.white),
+          // AnimatedIcon anima entre add e close enquanto o modal está aberto
+          child: AnimatedIcon(
+            icon: AnimatedIcons.add_event,
+            progress: _fabIconController,
+            color: Colors.white,
+          ),
         ),
       ),
     );
   }
 }
+
+// ---------------------------------------------------------------------------
+// AnimatedList — gerencia inserções e remoções com animação
+// ---------------------------------------------------------------------------
+
+class _AccountAnimatedList extends StatefulWidget {
+  final List<Account> accounts;
+  final List accountTypes;
+
+  const _AccountAnimatedList({
+    super.key,
+    required this.accounts,
+    required this.accountTypes,
+  });
+
+  @override
+  State<_AccountAnimatedList> createState() => _AccountAnimatedListState();
+}
+
+class _AccountAnimatedListState extends State<_AccountAnimatedList> {
+  final GlobalKey<AnimatedListState> _listKey = GlobalKey<AnimatedListState>();
+  late List<Account> _localAccounts;
+
+  @override
+  void initState() {
+    super.initState();
+    _localAccounts = List.from(widget.accounts);
+  }
+
+  @override
+  void didUpdateWidget(_AccountAnimatedList oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    final oldList = oldWidget.accounts;
+    final newList = widget.accounts;
+
+    // Detecta items inseridos
+    for (int i = 0; i < newList.length; i++) {
+      if (!oldList.any((a) => a.id == newList[i].id)) {
+        _localAccounts.insert(i, newList[i]);
+        _listKey.currentState?.insertItem(
+          i,
+          duration: const Duration(milliseconds: 350),
+        );
+      }
+    }
+
+    // Detecta items removidos pelo provider (ex: reload da API)
+    for (int i = _localAccounts.length - 1; i >= 0; i--) {
+      if (!newList.any((a) => a.id == _localAccounts[i].id)) {
+        final removed = _localAccounts.removeAt(i);
+        _listKey.currentState?.removeItem(
+          i,
+          (context, animation) => _buildRemovedItem(removed, animation),
+          duration: const Duration(milliseconds: 300),
+        );
+      }
+    }
+  }
+
+  Widget _buildRemovedItem(Account account, Animation<double> animation) {
+    return SizeTransition(
+      sizeFactor: animation,
+      child: FadeTransition(
+        opacity: animation,
+        child: AccountWidget(
+          account: account,
+          accountTypes: widget.accountTypes.cast(),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _deleteAccount(BuildContext context, int index) async {
+    final account = _localAccounts[index];
+    final provider = context.read<AccountProvider>();
+
+    // Remove localmente e anima a saída
+    _localAccounts.removeAt(index);
+    _listKey.currentState?.removeItem(
+      index,
+      (ctx, animation) => _buildRemovedItem(account, animation),
+      duration: const Duration(milliseconds: 300),
+    );
+
+    // Chama a API
+    try {
+      await provider.deleteAccount(account.id);
+    } catch (_) {
+      // Se a API falhar, restaura o item
+      if (context.mounted) {
+        _localAccounts.insert(index, account);
+        _listKey.currentState?.insertItem(
+          index,
+          duration: const Duration(milliseconds: 350),
+        );
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Erro ao excluir conta.')),
+        );
+      }
+      return;
+    }
+
+    if (!context.mounted) return;
+
+    // Snackbar com "Desfazer"
+    ScaffoldMessenger.of(context).clearSnackBars();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('${account.name} ${account.lastName} excluído.'),
+        duration: const Duration(seconds: 4),
+        action: SnackBarAction(
+          label: 'Desfazer',
+          onPressed: () async {
+            // Restaura no provider e reinsere com animação
+            provider.restoreAccountLocally(account, index);
+            _localAccounts.insert(index, account);
+            _listKey.currentState?.insertItem(
+              index,
+              duration: const Duration(milliseconds: 350),
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: AnimatedList(
+        key: _listKey,
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        initialItemCount: _localAccounts.length,
+        itemBuilder: (context, index, animation) {
+          final account = _localAccounts[index];
+          return SlideTransition(
+            position: Tween<Offset>(
+              begin: const Offset(1, 0),
+              end: Offset.zero,
+            ).animate(CurvedAnimation(
+              parent: animation,
+              curve: Curves.easeOut,
+            )),
+            child: FadeTransition(
+              opacity: animation,
+              child: AccountWidget(
+                account: account,
+                accountTypes: widget.accountTypes.cast(),
+                onDelete: () => _deleteAccount(context, index),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Widgets auxiliares
+// ---------------------------------------------------------------------------
 
 class _SummaryCard extends StatelessWidget {
   final String title;

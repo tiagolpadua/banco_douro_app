@@ -1,10 +1,8 @@
 import 'dart:math';
 
 import 'package:animations/animations.dart';
-import 'package:banco_douro_app/providers/account_provider.dart';
 import 'package:banco_douro_app/ui/screens/account_detail_screen.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import '../../models/account.dart';
 import '../../models/account_type.dart';
 import '../theme/app_colors.dart';
@@ -12,14 +10,12 @@ import '../theme/app_colors.dart';
 class AccountWidget extends StatelessWidget {
   final Account account;
   final List<AccountType> accountTypes;
-  final VoidCallback? onUpdate;
   final VoidCallback? onDelete;
 
   const AccountWidget({
     super.key,
     required this.account,
     required this.accountTypes,
-    this.onUpdate,
     this.onDelete,
   });
 
@@ -31,55 +27,90 @@ class AccountWidget extends StatelessWidget {
     return type?.description ?? "Tipo desconhecido";
   }
 
-  Future<void> _onDeletePressed(BuildContext context) async {
-    try {
-      await context.read<AccountProvider>().deleteAccount(account.id);
-
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Conta excluida com sucesso!')),
-        );
-        onDelete?.call();
-      }
-    } catch (e) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Erro ao excluir conta: $e')));
-      }
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: OpenContainer(
-        transitionDuration: const Duration(milliseconds: 400),
-        transitionType: ContainerTransitionType.fadeThrough,
-        closedElevation: 0,
-        openElevation: 0,
-        closedShape: RoundedRectangleBorder(
+    return Dismissible(
+      key: ValueKey(account.id),
+      direction: DismissDirection.endToStart,
+      // Fundo vermelho revelado durante o arrasto
+      background: Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        decoration: BoxDecoration(
+          color: AppColors.negative,
           borderRadius: BorderRadius.circular(16),
         ),
-        closedColor: AppColors.cardBackground,
-        openColor: AppColors.background,
-        closedBuilder: (context, openContainer) {
-          return _ClosedCard(
-            account: account,
-            accountTypes: accountTypes,
-            onDelete: onDelete,
-            onOpenDetail: openContainer,
-            getTypeDescription: _getAccountTypeDescription,
-            onDeletePressed: _onDeletePressed,
-          );
-        },
-        openBuilder: (context, _) {
-          return AccountDetailScreen(
-            account: account,
-            accountTypes: accountTypes,
-          );
-        },
+        alignment: Alignment.centerRight,
+        padding: const EdgeInsets.only(right: 24),
+        child: const Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.delete_outline, color: Colors.white, size: 28),
+            SizedBox(height: 4),
+            Text(
+              'Excluir',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+      ),
+      // Confirmação antes de dispensar
+      confirmDismiss: (_) async {
+        return await showDialog<bool>(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            title: const Text('Excluir conta'),
+            content: Text(
+              'Deseja excluir a conta de ${account.name} ${account.lastName}?',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(ctx).pop(false),
+                child: const Text('Cancelar'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.of(ctx).pop(true),
+                style: TextButton.styleFrom(
+                  foregroundColor: AppColors.negative,
+                ),
+                child: const Text('Excluir'),
+              ),
+            ],
+          ),
+        );
+      },
+      // Chamado após confirmação — delega a exclusão real ao DashboardScreen
+      onDismissed: (_) => onDelete?.call(),
+      child: Padding(
+        padding: const EdgeInsets.only(bottom: 12),
+        child: OpenContainer(
+          transitionDuration: const Duration(milliseconds: 400),
+          transitionType: ContainerTransitionType.fadeThrough,
+          closedElevation: 0,
+          openElevation: 0,
+          closedShape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          closedColor: AppColors.cardBackground,
+          openColor: AppColors.background,
+          closedBuilder: (context, openContainer) {
+            return _ClosedCard(
+              account: account,
+              onOpenDetail: openContainer,
+              getTypeDescription: _getAccountTypeDescription,
+              onDeletePressed: onDelete,
+            );
+          },
+          openBuilder: (context, _) {
+            return AccountDetailScreen(
+              account: account,
+              accountTypes: accountTypes,
+            );
+          },
+        ),
       ),
     );
   }
@@ -87,16 +118,12 @@ class AccountWidget extends StatelessWidget {
 
 class _ClosedCard extends StatelessWidget {
   final Account account;
-  final List<AccountType> accountTypes;
-  final VoidCallback? onDelete;
   final VoidCallback onOpenDetail;
   final String Function() getTypeDescription;
-  final Future<void> Function(BuildContext) onDeletePressed;
+  final VoidCallback? onDeletePressed;
 
   const _ClosedCard({
     required this.account,
-    required this.accountTypes,
-    required this.onDelete,
     required this.onOpenDetail,
     required this.getTypeDescription,
     required this.onDeletePressed,
@@ -173,15 +200,11 @@ class _ClosedCard extends StatelessWidget {
               ),
             ),
 
-            // Botão de excluir (editar abre o detalhe via onTap do card)
-            IconButton(
-              icon: const Icon(
-                Icons.delete_outline,
-                color: AppColors.negative,
-                size: 22,
-              ),
-              onPressed: () => onDeletePressed(context),
-              tooltip: 'Excluir',
+            // Dica visual: ícone de swipe
+            const Icon(
+              Icons.swipe_left_outlined,
+              color: AppColors.textSecondary,
+              size: 18,
             ),
           ],
         ),
