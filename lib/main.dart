@@ -3,11 +3,14 @@ import 'package:banco_douro_app/providers/auth_provider.dart';
 import 'package:banco_douro_app/ui/dashboard_screen.dart';
 import 'package:banco_douro_app/ui/theme/app_theme.dart';
 import 'package:flutter/material.dart';
+// import 'package:flutter/scheduler.dart';
 import 'package:provider/provider.dart';
-import 'ui/home_screen.dart';
+
 import 'ui/login_screen.dart';
 
 void main() async {
+  // timeDilation = 10.0;
+
   WidgetsFlutterBinding.ensureInitialized();
 
   final authProvider = AuthProvider();
@@ -45,8 +48,8 @@ class BancoDouroApp extends StatelessWidget {
       routes: {
         "dashboard": (context) => const DashboardScreen(),
         "login": (context) => const LoginScreen(),
-        "home": (context) => const HomeScreen(),
       },
+      // onGenerateRoute: AppRoutes.generate,
     );
   }
 }

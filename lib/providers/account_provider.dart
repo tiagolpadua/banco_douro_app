@@ -46,6 +46,7 @@ class AccountProvider extends ChangeNotifier {
 
   Future<void> loadAll() async {
     _isLoading = true;
+    await Future.delayed(Duration(seconds: 5));
     _error = null;
     notifyListeners();
 

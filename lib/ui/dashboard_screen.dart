@@ -319,16 +319,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
-                        const Text(
-                          'Contas recentes',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.textPrimary,
-                          ),
-                        ),
+                        // const Text(
+                        //   'Contas recentes',
+                        //   style: TextStyle(
+                        //     fontSize: 16,
+                        //     fontWeight: FontWeight.w600,
+                        //     color: AppColors.textPrimary,
+                        //   ),
+                        // ),
                         if (provider.isLoading)
                           const SizedBox(
                             width: 18,
@@ -361,6 +361,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           child: AccountWidget(
                             account: account,
                             accountTypes: provider.accountTypes,
+                            onDelete: () => provider.deleteAccount(account.id),
                           ),
                         );
                       }, childCount: provider.accounts.length),
