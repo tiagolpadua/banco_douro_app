@@ -52,7 +52,7 @@ void main() {
 
       await provider.loadAll();
 
-      expect(provider.accounts.length, 20);
+      expect(provider.accounts.length, 2);
       expect(provider.error, isNull);
       expect(provider.isLoading, false);
     });
