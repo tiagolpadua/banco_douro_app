@@ -1,9 +1,9 @@
 import 'dart:async';
 
-import 'package:banco_douro_app/ui/dashboard_screen.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
 import '../providers/account_provider.dart';
 import '../providers/auth_provider.dart';
 import 'theme/app_colors.dart';

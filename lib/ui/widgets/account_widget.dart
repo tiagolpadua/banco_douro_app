@@ -79,7 +79,7 @@ class AccountWidget extends StatelessWidget {
           ),
         );
       },
-      onDismissed: (_) => onDelete?.call(),
+      onDismissed: (_) => onDelete.call(),
       child: Container(
         padding: const EdgeInsets.all(16),
         margin: const EdgeInsets.only(bottom: 12),
