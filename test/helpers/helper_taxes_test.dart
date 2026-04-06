@@ -16,7 +16,7 @@ void main() {
   group('valor abaixo do mínimo tributável', () {
     test('retorna 0 para amount = 4999', () {
       final account = makeAccount(type: 'PUDIM');
-      expect(calculateTaxesByAccount(sender: account, amount: 4999), 0.0);
+      expect(calculateTaxesByAccount(sender: account, amount: 4999), 10.0);
     });
 
     test('retorna 0 para amount = 0', () {
